@@ -1,42 +1,28 @@
 package core;
 
-import java.util.GregorianCalendar;
-//import static core.Keyword.*;
+import java.util.Date;
+import static core.Keywords.*;
 
 /** A message handler that performs a simple lookup in from a weekly schedule. */
 public class TableHandler extends MessageHandler {
 
-	public String getResponse(Keyword key, GregorianCalendar time) {
-		String response;
-		switch (key) { // TODO: Fill these responses in with real logic
-		case SQUARE:
-			response = "";
-			break;
-		case CAMPUS:
-			response = "";
-			break;
-		case LAW:
-			response = "";
-			break;
-		case FREDDYS:
-			response = "";
-			break;
-		case NEXT_HOUR:
-			response = "";
-			break;
-		case HELP:
-			response = "";
-			break;
-		default:
-			response = "";
-			break;
-		}
-		return response;
+	protected TableHandler() {
+		super(Keywords.instance());
 	}
 
 	@Override
-	public String defaultMessage(GregorianCalendar time) {
-		return "Useful information" + "\nUnrecognized key word.  Text HELP for a list of key words.";
+	public String getResponse(Query q) {
+		if (q.getKeyword() == null) {
+			return defaultMessage(q.getTimeReceived());
+		} else if (q.getKeyword().equals(KEY_HELP)) {
+			return helpMessage(q.getTimeReceived());
+		}
+		return defaultMessage(q.getTimeReceived());
+	}
+
+	@Override
+	public String defaultMessage(Date date) {
+		return "";
 	}
 
 }
