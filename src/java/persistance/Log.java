@@ -114,7 +114,6 @@ public class Log {
 	 *            the query to be logged
 	 */
 	public void record(Query query) {
-	public void record(Query query) {
 		total++;
 		buffer.add(query);
 		if (total % 10 == 0) {
