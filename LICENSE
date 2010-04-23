@@ -6,7 +6,7 @@
 
 Copyright (C) 2010 Walt Javins
 
-This program is free software: you can use it, redistribute it and/or 
+This program is free software: you can use it, redistribute it and/or
 modify it under the terms of the GNU General Public License Version 3 as
 published by the Free Software Foundation.
 
@@ -16,6 +16,6 @@ to understand or even runnable.  It is probably broken and you're lucky
 if it doesn't delete your home folder.  If it does, don't complain to
 us.  We warned you!
 
-See the GNU General Public License for more details.  A copy of the 
-license (in a file named "GPL-3.0") should be included in 
-this directory. If not, see <http://www.gnu.org/licenses/>.
+See the GNU General Public License for more details.  A copy of the
+license (in a file named "GPL-3.0") should be included in this
+directory. If not, see <http://www.gnu.org/licenses/>.
