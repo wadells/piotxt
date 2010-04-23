@@ -15,7 +15,7 @@ import core.Query;
  * log file format is:
  * 
  * <pre>
- * [mm/dd/yyyy hh:mm:ss] [processing time] phonehash {keyword} "flattened text of message"
+ * [date] [processing time] phonehash {keyword} "flattened text of message"
  * </pre>
  */
 public class Log {
@@ -62,7 +62,9 @@ public class Log {
 	}
 
 	/**
-	 * Returns a single line log format of a message.
+	 * Returns a single line log format of a message.  This <em>is</em> lossy
+	 * because data about the phone number is hashed and the response to the
+	 * message is wiped.  All other data is recorded in a compact format though.
 	 * <p>
 	 * The first three field should all be justified / equally spaced. The phone
 	 * number is hashed because we want to know about user statistics, but
@@ -71,8 +73,8 @@ public class Log {
 	 * 
 	 * @see {@link Log}
 	 * 
-	 * @param q
-	 * @return
+	 * @param q the query to be flattened into a single log entry
+	 * @return the string representing the query
 	 */
 	static String queryToString(Query q) {
 		String date = LOG_DATE_FORM.format(q.getTimeReceived());
@@ -104,6 +106,14 @@ public class Log {
 		return s.replaceAll("\\s+", " ").trim();
 	}
 
+
+	/** 
+	* Records a single query in this log and occasionally saves the log to its file.
+	*
+	* @param query
+	 *            the query to be logged
+	 */
+	public void record(Query query) {
 	public void record(Query query) {
 		total++;
 		buffer.add(query);
@@ -131,9 +141,9 @@ public class Log {
 	 * Saves a list of queries to a file. This appends the queries to the file
 	 * instead of overwriting.
 	 * 
-	 * @param queries
-	 * @param file
-	 * @throws IOException
+	 * @param queries a list of queries to be saved
+	 * @param file the file to append them to
+	 * @throws IOException if the file cannot be read
 	 */
 	public static void save(List<Query> queries, File file) throws IOException {
 		boolean append = true;
