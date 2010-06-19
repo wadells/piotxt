@@ -1,0 +1,17 @@
+# We use line starting with a # as comments, because comments make humans happy
+# First, we define the stops
+# Format: Stop Name, Stop Keyword
+Pioneer Square, square
+
+# We can define different schedules based on the day/time.
+# Each schedule is assumed to last until the next "Schedule:" definition
+Schedule: Monday-Friday 7:05am-11:00pm
+
+# Schedules are comma delineated, and any am/pm is optional
+# Format: Stop Keyword, Times at this stop...
+square, 7:05, 8:05, 9:05, 10:05, 3:21, 4:18, 5:18, 6:29, 7:35, 8:36, 9:36, 10:35
+# <other stops go here...>
+
+# If a schedule overlaps another already-defined schedule, we overwrite the old with the new
+Schedule: Friday 7:00pm-2:00am
+square, 7:32, 8:31, 9:30, 10:22, 11:14, 11:51, 12:28, 1:04, 1:42
