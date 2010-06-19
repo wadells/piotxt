@@ -1,12 +1,17 @@
-////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////
 
-                        TXT 4 RAZ
+       Txt 4 Raz - A transit tracker for Lewis & Clark College
 
-////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////
 
-     TXT 4 RAZ is the beginnings of a transit tracker for 
-Lewis & Clark College.  Ideally it will be a text message
-based service that serves up the school shuttle information.
+     Txt 4 Raz is the beginnings of a transit tracker for Lewis & Clark
+College.  It will be a text message service for providing the school
+shuttle schedule.  For now, we're aiming to serve the schedule from a 
+file, but  eventually we hope to use GPS geolocation to get realtime
+schedule updates.
 
-     We're just getting started right now, but the service 
-will ideally be deployed for fall of 2010.
+     We're just getting started right now, but the service will ideally
+be deployed for Fall Semester, 2010.
+
+    If you would like to know more about the project contact github user 
+javins.
