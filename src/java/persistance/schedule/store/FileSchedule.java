@@ -1,9 +1,11 @@
-package persistance.schedule;
+package persistance.schedule.store;
 
 import java.io.File;
 import java.util.ArrayList;
 
-import persistance.schedule.store.FileParser;
+import persistance.schedule.Schedule;
+import persistance.schedule.Stop;
+import time.Time;
 
 /** Loads and stores the Raz schedule. */
 public class FileSchedule implements Schedule {
@@ -29,6 +31,9 @@ public class FileSchedule implements Schedule {
 	}
 	
 	public static void main(String[] args) {
-		//System.out.println("it worked!");
+//		System.out.println(Calendar.getInstance().getTime());
+//		System.out.println( / 60);
+//		System.out.println(new Time(Day.MONDAY, 00, 10).addHours(-178));
+//		System.out.println("it worked! " + ScheduleManager.getSchedule());
 	}
 }

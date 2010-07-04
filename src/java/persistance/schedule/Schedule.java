@@ -1,5 +1,8 @@
 package persistance.schedule;
 
+import time.Time;
+
+
 /** Represents a schedule of stops. */
 public interface Schedule {
 

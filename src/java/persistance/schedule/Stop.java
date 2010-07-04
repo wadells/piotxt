@@ -1,5 +1,8 @@
 package persistance.schedule;
 
+import time.Time;
+
+
 /** Represents a single shuttle bus stop at a certain time. */
 public class Stop {
 	
@@ -50,5 +53,10 @@ public class Stop {
 
 	public Direction getDirection() {
 		return direction;
+	}
+	
+	@Override
+	public String toString() {
+		return String.format("%s %s%s", stopKeyword, time, direction.getMarker());
 	}
 }

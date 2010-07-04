@@ -1,9 +1,13 @@
-package persistance.schedule;
+package persistance.schedule.store;
 
 import static java.lang.String.format;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import persistance.schedule.Schedule;
+import persistance.schedule.Stop;
+import time.Time;
 
 /** A mock schedule that provides some plausible, if nonexistant, stops. */
 public class MockSchedule implements Schedule {
@@ -27,5 +31,4 @@ public class MockSchedule implements Schedule {
 		stops.add(new Stop("Mock End Stop", "keyword1", end.addMinutes(-1)));
 		return stops;
 	}
-
 }

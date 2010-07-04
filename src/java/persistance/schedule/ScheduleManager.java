@@ -6,6 +6,9 @@ import static java.lang.Boolean.parseBoolean;
 import java.io.File;
 import java.net.URISyntaxException;
 
+import persistance.schedule.store.FileSchedule;
+import persistance.schedule.store.MockSchedule;
+
 /** A manager class for controlling the schedule singleton. 
  * 
  * If the mock.schedule property is set to true (i.e. -Dmock.schedule=true),
