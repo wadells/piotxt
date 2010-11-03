@@ -12,7 +12,7 @@ public class Query {
 	/** The time the request was received. */
 	private final Date timeReceived;
 
-	/** The time it the response finished sending. */
+	/** The time the response finished sending. */
 	private Date timeResponded;
 
 	/** The body of the received text message. */
