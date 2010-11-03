@@ -83,7 +83,7 @@ public class Keywords {
 	}
 
 	/**
-	 * Returns the definiton associated with the keyword or null if the keyword
+	 * Returns the definition associated with the keyword or null if the keyword
 	 * is not one recognized by the system
 	 * 
 	 * @param keyword
