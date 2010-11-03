@@ -3,3 +3,6 @@
 .classpath
 .project
 bin/
+
+# login information
+resources/pio_text.properties
