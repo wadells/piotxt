@@ -65,7 +65,8 @@ public class GoogleXmlParser {
 			} catch (IOException ignored) {
 				System.out.println("Could not read " + fileLocation + ".");
 			} catch (SAXException e) {
-				System.out.println("Could not parse file " +  fileLocation + ".");
+				System.out
+						.println("Could not parse file " + fileLocation + ".");
 				e.printStackTrace();
 			}
 		}
@@ -107,7 +108,7 @@ public class GoogleXmlParser {
 	 * @param xml
 	 *            the xml google's "api" returns
 	 * @return a list of user queries for the system to process
-	 * @throws ParseException 
+	 * @throws ParseException
 	 * @throws ParserConfigurationException
 	 * @throws IOException
 	 * @throws SAXException

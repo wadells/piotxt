@@ -74,9 +74,11 @@ public class GvConnection implements SmsConnection {
 			String page = voice.getSMS();
 			messages = parse(page);
 		} catch (IOException e) {
-			throw new SmsRecieveException("Could retrieve sms from Google Voice.", e);
+			throw new SmsRecieveException(
+					"Could retrieve sms from Google Voice.", e);
 		} catch (SAXException e) {
-			throw new SmsRecieveException("Could not parse sms xml returned by Google Voice.", e);
+			throw new SmsRecieveException(
+					"Could not parse sms xml returned by Google Voice.", e);
 		}
 		return messages;
 	}
@@ -86,7 +88,8 @@ public class GvConnection implements SmsConnection {
 		try {
 			voice.sendSMS(number, message);
 		} catch (IOException e) {
-			throw new SmsSendException("Unable to send sms though Google Voice", e);
+			throw new SmsSendException(
+					"Unable to send sms though Google Voice", e);
 		}
 	}
 
