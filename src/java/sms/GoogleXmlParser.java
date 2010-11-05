@@ -9,11 +9,13 @@ import java.util.*;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 import persistance.Log;
 import static utils.FileUtils.readFile;
@@ -62,6 +64,9 @@ public class GoogleXmlParser {
 				}
 			} catch (IOException ignored) {
 				System.out.println("Could not read " + fileLocation + ".");
+			} catch (SAXException e) {
+				System.out.println("Could not parse file " +  fileLocation + ".");
+				e.printStackTrace();
 			}
 		}
 	}
@@ -83,6 +88,7 @@ public class GoogleXmlParser {
 	@SuppressWarnings("deprecation")
 	static Date parseTime(String time) throws ParseException {
 		Date date;
+		time = time.trim();
 		if (time.length() <= "hh:mm PM".length()) {
 			date = SMALL_TIME.parse(time);
 			Date today = new Date();
@@ -101,48 +107,63 @@ public class GoogleXmlParser {
 	 * @param xml
 	 *            the xml google's "api" returns
 	 * @return a list of user queries for the system to process
+	 * @throws ParseException 
+	 * @throws ParserConfigurationException
+	 * @throws IOException
+	 * @throws SAXException
 	 */
-	public static List<Query> parse(String xml) {
+	public static List<Query> parse(String xml) throws SAXException {
 		List<Query> found = new ArrayList<Query>();
+		Document dom = createDom(xml);
+		Element root = dom.getDocumentElement();
+		List<Element> conversations = getConversations(root);
+		for (Element conversation : conversations) {
+			List<Element> rows = getElementsWithAttributeValue(conversation,
+					"class", "gc-message-sms-row", false);
+			// The last message in the conversation is the only one we
+			// care about. If it is from us, ignore it, because we've dealt
+			// with that coversation, if it is from someone else, then we
+			// have a new query.
+			Element lastrow = rows.get(rows.size() - 1);
+			// there is only one message per row, so grab index 0
+			String from = getElementsWithAttributeValue(lastrow, "class",
+					"gc-message-sms-from", false).get(0).getTextContent();
+			// If not from us, ignore
+			if (!from.equalsIgnoreCase("Me:")) {
+				String msg = getElementsWithAttributeValue(lastrow, "class",
+						"gc-message-sms-text", false).get(0).getTextContent();
+				String time = getElementsWithAttributeValue(lastrow, "class",
+						"gc-message-sms-time", false).get(0).getTextContent();
 
-		// clean up xml
+				try {
+					found.add(new Query(parseTime(time), msg, from));
+				} catch (ParseException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+
+		return found;
+	}
+
+	static Document createDom(String xml) throws SAXException {
 		String niceXml = removeNastyBits(xml);
+		// Using factory get an instance of document builder
+		Document dom = null;
 		try {
-			// Using factory get an instance of document builder
 			DocumentBuilder db = DocumentBuilderFactory.newInstance()
 					.newDocumentBuilder();
 			// parse using builder to get DOM representation of the XML file
-			Document dom = db.parse(new InputSource(new StringReader(niceXml)));
-			Element root = dom.getDocumentElement();
-			List<Element> conversations = getConversations(root);
-			for (Element conversation : conversations) {
-				List<Element> rows = getElementsWithAttributeValue(
-						conversation, "class", "gc-message-sms-row", false);
-				// The last message in the conversation is the only one we
-				// care about. If it is from us, ignore it, because we've dealt
-				// with that coversation, if it is from someone else, then we
-				// have a new query.
-				Element lastrow = rows.get(rows.size() - 1);
-				// there is only one message per row, so grab index 0
-				String from = getElementsWithAttributeValue(lastrow, "class",
-						"gc-message-sms-from", false).get(0).getTextContent();
-				// If not from us, ignore
-				if (!from.equalsIgnoreCase("Me:")) {
-					String msg = getElementsWithAttributeValue(lastrow,
-							"class", "gc-message-sms-text", false).get(0)
-							.getTextContent();
-					String time = getElementsWithAttributeValue(lastrow,
-							"class", "gc-message-sms-time", false).get(0)
-							.getTextContent();
-
-					found.add(new Query(parseTime(time), msg, from));
-				}
-			}
-
-		} catch (Exception e) {
-			e.printStackTrace();
+			dom = db.parse(new InputSource(new StringReader(niceXml)));
+		} catch (ParserConfigurationException ignored) { // won't fail
+			ignored.printStackTrace();
+		} catch (SAXException e) {
+			throw e;
+		} catch (IOException ignored) {
+			ignored.printStackTrace();
 		}
-		return found;
+		return dom;
 	}
 
 	/**

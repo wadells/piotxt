@@ -6,8 +6,8 @@ import java.io.IOException;
 @SuppressWarnings("serial")
 public class SmsSendException extends IOException {
 	
-	public SmsSendException(Exception cause) {
-		super(cause);
+	public SmsSendException(String expl, Exception cause) {
+		super(expl, cause);
 	}
 
 }

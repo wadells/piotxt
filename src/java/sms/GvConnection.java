@@ -6,6 +6,8 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Properties;
 
+import org.xml.sax.SAXException;
+
 import persistance.Log;
 
 import com.techventus.server.voice.Voice;
@@ -72,7 +74,9 @@ public class GvConnection implements SmsConnection {
 			String page = voice.getSMS();
 			messages = parse(page);
 		} catch (IOException e) {
-			throw new SmsRecieveException(e);
+			throw new SmsRecieveException("Could retrieve sms from Google Voice.", e);
+		} catch (SAXException e) {
+			throw new SmsRecieveException("Could not parse sms xml returned by Google Voice.", e);
 		}
 		return messages;
 	}
@@ -82,7 +86,7 @@ public class GvConnection implements SmsConnection {
 		try {
 			voice.sendSMS(number, message);
 		} catch (IOException e) {
-			throw new SmsSendException(e);
+			throw new SmsSendException("Unable to send sms though Google Voice", e);
 		}
 	}
 
