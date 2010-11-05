@@ -27,14 +27,24 @@ public class Query {
 	/** The appropriate response to the message. */
 	private String response;
 
+	/**
+	 * Create a new query, ready to be processed.
+	 * 
+	 * @param timeReceived
+	 *            the time the query was recieved
+	 * @param body
+	 *            the body of the text message
+	 * @param phoneNumber
+	 *            the sending phone number
+	 */
 	public Query(Date timeReceived, String body, String phoneNumber) {
 		this.timeReceived = timeReceived;
 		this.body = body;
 		this.keyword = Keywords.instance().extract(body);
 		this.phoneNumber = phoneNumber;
-		
+
 	}
-	
+
 	public String getBody() {
 		return body;
 	}
@@ -57,6 +67,10 @@ public class Query {
 
 	public Date getTimeResponded() {
 		return timeResponded;
+	}
+
+	public String toString() {
+		return phoneNumber + " " + timeReceived.toString() + " " + body;
 	}
 
 	public void setResponse(String response) {
