@@ -135,7 +135,7 @@ public class GoogleXmlParser {
 							"class", "gc-message-sms-time", false).get(0)
 							.getTextContent();
 
-					found.add(new Query(new Date(), msg, from));
+					found.add(new Query(parseTime(time), msg, from));
 				}
 			}
 
