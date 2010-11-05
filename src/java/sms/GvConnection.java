@@ -1,5 +1,7 @@
 package sms;
 
+import gvjava.org.json.JSONException;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -7,8 +9,6 @@ import java.util.List;
 import java.util.Properties;
 
 import org.xml.sax.SAXException;
-
-import persistance.Log;
 
 import com.techventus.server.voice.Voice;
 import com.techventus.server.voice.exception.CaptchaRequiredException;
@@ -79,8 +79,15 @@ public class GvConnection implements SmsConnection {
 		} catch (SAXException e) {
 			throw new SmsRecieveException(
 					"Could not parse sms xml returned by Google Voice.", e);
+		} catch (JSONException e) {
+			throw new SmsRecieveException(
+					"Could not parse json returned by Google Voice.", e);
 		}
 		return messages;
+	}
+
+	String getRawSmsXml() throws IOException {
+		return voice.getSMS();
 	}
 
 	@Override
@@ -134,10 +141,15 @@ public class GvConnection implements SmsConnection {
 	public static void main(String[] args) throws IOException {
 		GvConnection connection = new GvConnection();
 		connection.setup();
+		// String filename = "resources/gv_dump";
+		// for ( int i = 0; i < 5; i++) {
+		// utils.FileUtils.writeFile(filename + i + ".xml",
+		// connection.getRawSmsXml(), true);
+		// }
 		List<Query> list = connection.getNewMessages();
 		System.out.println("\n" + list.size() + " new queries:");
 		for (Query q : list) {
-			System.out.println(Log.queryToString(q));
+			System.out.println(persistance.Log.queryToString(q));
 		}
 	}
 

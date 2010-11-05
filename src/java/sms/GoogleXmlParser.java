@@ -1,11 +1,16 @@
 package sms;
 
+import static utils.FileUtils.readFile;
+import gvjava.org.json.JSONException;
+import gvjava.org.json.JSONObject;
+
 import java.io.IOException;
 import java.io.StringReader;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -18,8 +23,6 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import persistance.Log;
-import static utils.FileUtils.readFile;
-
 import core.Query;
 
 /**
@@ -39,116 +42,61 @@ import core.Query;
  */
 public class GoogleXmlParser {
 
-	private final static DateFormat SMALL_TIME = new SimpleDateFormat("h:mm a"); // e.g.
-	// 6:27
-	// PM
-	private final static DateFormat BIG_TIME = new SimpleDateFormat(
-			"MM/d/yy h:mm a"); // e.g. 11/3/10 4:33 PM
-
-	public static void main(String[] args) {
-		// try {
-		// Date d = parseTime("11/3/10 4:33 AM");
-		// System.out.println(d.toString());
-		// } catch (ParseException e) {
-		// // TODO Auto-generated catch block
-		// e.printStackTrace();
-		// }
-		String fileLocation = "resources/gv_dump";
-		for (int i = 0; i < 5; i++) {
-			try {
-				String xml = readFile(fileLocation + i + ".xml");
-				List<Query> list = parse(xml);
-				System.out.println(list.size() + " new queries.\n");
-				for (Query q : list) {
-					System.out.println(Log.queryToString(q));
+	/**
+	 * A helper method for searching through Element trees.
+	 * 
+	 * @param e
+	 *            the Element with children
+	 * @param q
+	 *            the Queue to add the children to
+	 */
+	private static void addChildrenToQueue(Element e, Queue<Element> q) {
+		NodeList nl = e.getChildNodes();
+		int size = nl.getLength();
+		if (size > 0) {
+			for (int i = 0; i < size; i++) {
+				// if we have an element, and not an attribute, add it
+				if (nl.item(i) instanceof Element) {
+					q.add((Element) nl.item(i));
 				}
-			} catch (IOException ignored) {
-				System.out.println("Could not read " + fileLocation + ".");
-			} catch (SAXException e) {
-				System.out
-						.println("Could not parse file " + fileLocation + ".");
-				e.printStackTrace();
 			}
 		}
 	}
 
 	/**
-	 * A helper method to parse the time stamps properly. Google serves them in
-	 * two different formats, but this will sort through it all.
+	 * Builds a new query from various bits of google data.
 	 * 
-	 * Using the deprecated Date object methods is sloppy, but Calendar is such
-	 * a huge pain that it isn't really worth dragging all of that out when Date
-	 * does it efficiently enough.
-	 * 
-	 * @param time
-	 *            the time string Google returns
-	 * @return a date object representing the actual time recieved
-	 * @throws ParseException
-	 *             if the date can't be parsed
+	 * @param id
+	 *            the json/xml id of the conversation
+	 * @param msg
+	 *            the xml containing the body of the message
+	 * @param json
+	 *            the json containing the metadata of the message
+	 * @return
+	 * @throws JSONException
 	 */
-	@SuppressWarnings("deprecation")
-	static Date parseTime(String time) throws ParseException {
-		Date date;
-		time = time.trim();
-		if (time.length() <= "hh:mm PM".length()) {
-			date = SMALL_TIME.parse(time);
-			Date today = new Date();
-			date = new Date(today.getYear(), today.getMonth(), today.getDay(),
-					date.getHours(), date.getMinutes());
-		} else {
-			date = BIG_TIME.parse(time);
-		}
-		return date;
+	private static Query buildQuery(String id, Element msg, JSONObject json)
+			throws JSONException {
+		// the body is only avaliable through the xml
+		String body = getElementsWithAttributeValue(msg, "class",
+				"gc-message-sms-text", false).get(0).getTextContent();
+		// get other data from the json metadata
+		JSONObject message = json.getJSONObject("messages").getJSONObject(id);
+		String number = message.getString("phoneNumber");
+		Long time = message.getLong("startTime");
+		return new Query(new Date(time), body, number);
 	}
 
 	/**
-	 * This processes the raw xml/html in a screen scrapey fashion to produce a
-	 * list of queries.
+	 * Creates a Document Object Model from the raw xml string.
 	 * 
 	 * @param xml
-	 *            the xml google's "api" returns
-	 * @return a list of user queries for the system to process
-	 * @throws ParseException
-	 * @throws ParserConfigurationException
-	 * @throws IOException
+	 *            the unsanitized response from google
+	 * @return the DOM representing the xml
 	 * @throws SAXException
+	 *             if the xml is unparseable
 	 */
-	public static List<Query> parse(String xml) throws SAXException {
-		List<Query> found = new ArrayList<Query>();
-		Document dom = createDom(xml);
-		Element root = dom.getDocumentElement();
-		List<Element> conversations = getConversations(root);
-		for (Element conversation : conversations) {
-			List<Element> rows = getElementsWithAttributeValue(conversation,
-					"class", "gc-message-sms-row", false);
-			// The last message in the conversation is the only one we
-			// care about. If it is from us, ignore it, because we've dealt
-			// with that coversation, if it is from someone else, then we
-			// have a new query.
-			Element lastrow = rows.get(rows.size() - 1);
-			// there is only one message per row, so grab index 0
-			String from = getElementsWithAttributeValue(lastrow, "class",
-					"gc-message-sms-from", false).get(0).getTextContent();
-			// If not from us, ignore
-			if (!from.equalsIgnoreCase("Me:")) {
-				String msg = getElementsWithAttributeValue(lastrow, "class",
-						"gc-message-sms-text", false).get(0).getTextContent();
-				String time = getElementsWithAttributeValue(lastrow, "class",
-						"gc-message-sms-time", false).get(0).getTextContent();
-
-				try {
-					found.add(new Query(parseTime(time), msg, from));
-				} catch (ParseException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			}
-		}
-
-		return found;
-	}
-
-	static Document createDom(String xml) throws SAXException {
+	private static Document createDom(String xml) throws SAXException {
 		String niceXml = removeNastyBits(xml);
 		// Using factory get an instance of document builder
 		Document dom = null;
@@ -173,7 +121,8 @@ public class GoogleXmlParser {
 	 * @param root
 	 *            the root of the dom to search
 	 */
-	private static List<Element> getConversations(Element root) {
+	private static List<Element> extractConversations(Document dom) {
+		Element root = dom.getDocumentElement();
 		List<Element> conv = new ArrayList<Element>();
 		// Traverse the children of the html element
 		NodeList nl = root.getElementsByTagName("html").item(0).getChildNodes();
@@ -190,26 +139,44 @@ public class GoogleXmlParser {
 	}
 
 	/**
-	 * A helper method to trim out the CDATA bits and html refrences in what
-	 * google returns. This seems incredibly hacky, but necessary for the dom
-	 * processor to work.
+	 * Extracts the text in the 'from:' field from the dom.
 	 * 
-	 * @param in
-	 * @return
-	 * @throws IOException
+	 * @param message
+	 *            the google xml message to be processed
+	 * @return the text of the from field, either a number or 'Me:'
 	 */
-	private static String removeNastyBits(String in) {
-		String clean = in;
-		clean = clean.replaceAll("<..CDATA.", "");
-		clean = clean.replaceAll("\\]\\]>", "");
-		clean = clean.replaceAll("&nbsp;", "");
-		clean = clean.replaceAll("&copy;", "");
-		// The following needs to be scrubbed because of url queries that java's
-		// parser interprets as entities. This is a non-greedy replace that
-		// should catch every url with an ampersand in it.
-		clean = clean.replaceAll("href=\"http://.*?&.*?\"", "");
-		return clean;
+	private static String extractFromField(Element message) {
+		return getElementsWithAttributeValue(message, "class",
+				"gc-message-sms-from", false).get(0).getTextContent().trim();
+	}
 
+	/**
+	 * Extracts the JSON Object from the Google xml.
+	 * 
+	 * @param dom
+	 *            the dom of the xml
+	 * @return The JSON Object
+	 * @throws JSONException
+	 *             if the object is unparseable
+	 */
+	private static JSONObject extractJson(Document dom) throws JSONException {
+		String text = dom.getElementsByTagName("json").item(0).getTextContent();
+		JSONObject json = new JSONObject(text);
+		return json;
+	}
+
+	/**
+	 * Extracts the last message in a conversation.
+	 * 
+	 * @param conversation
+	 *            the conversation
+	 * @return the last message in the conversation
+	 */
+	private static Element extractLastMessage(Element conversation) {
+		List<Element> rows = getElementsWithAttributeValue(conversation,
+				"class", "gc-message-sms-row", false);
+		Element lastrow = rows.get(rows.size() - 1);
+		return lastrow;
 	}
 
 	/**
@@ -261,52 +228,83 @@ public class GoogleXmlParser {
 		return found;
 	}
 
-	/**
-	 * A helper method for searching through Element trees.
-	 * 
-	 * @param e
-	 *            the Element with children
-	 * @param q
-	 *            the Queue to add the children to
-	 */
-	private static void addChildrenToQueue(Element e, Queue<Element> q) {
-		NodeList nl = e.getChildNodes();
-		int size = nl.getLength();
-		if (size > 0) {
-			for (int i = 0; i < size; i++) {
-				// if we have an element, and not an attribute, add it
-				if (nl.item(i) instanceof Element) {
-					q.add((Element) nl.item(i));
+	public static void main(String[] args) {
+
+		String fileLocation = "resources/gv_dump";
+		for (int i = 0; i < 5; i++) {
+			String file = fileLocation + i + ".xml";
+			try {
+				String xml = readFile(file);
+				List<Query> list = parse(xml);
+				System.out.println("\n" + list.size() + " new queries.");
+				for (Query q : list) {
+					System.out.println(Log.queryToString(q));
 				}
+			} catch (IOException ignored) {
+				System.out.println("Could not read " + file + ".");
+			} catch (Exception e) {
+				System.out.println("Could not parse file " + file + ".");
+				e.printStackTrace();
 			}
 		}
 	}
 
-	// def extractsms(htmlsms) :
-	// """
-	// extractsms -- extract SMS messages from BeautifulSoup tree of Google
-	// Voice SMS HTML.
-	//
-	// Output is a list of dictionaries, one per message.
-	// """
-	// msgitems = [] # accum message items here
-	// # Extract all conversations by searching for a DIV with an ID at top
-	// level.
-	// tree = BeautifulSoup.BeautifulSoup(htmlsms) # parse HTML into tree
-	// conversations = tree.findAll("div",attrs={"id" : True},recursive=False)
-	// for conversation in conversations :
-	// # For each conversation, extract each row, which is one SMS message.
-	// rows = conversation.findAll(attrs={"class" : "gc-message-sms-row"})
-	// for row in rows : # for all rows
-	// # For each row, which is one message, extract all the fields.
-	// msgitem = {"id" : conversation["id"]} # tag this message with
-	// conversation ID
-	// spans = row.findAll("span",attrs={"class" : True}, recursive=False)
-	// for span in spans : # for all spans in row
-	// cl = span["class"].replace('gc-message-sms-', '')
-	// msgitem[cl] = (" ".join(span.findAll(text=True))).strip() # put text in
-	// dict
-	// msgitems.append(msgitem) # add msg dictionary to list
-	// return msgitems
+	/**
+	 * This processes the raw xml/html in a screen scrapey fashion to produce a
+	 * list of queries.
+	 * 
+	 * @param xml
+	 *            the xml google's "api" returns
+	 * @return a list of user queries for the system to process
+	 * @throws SAXException
+	 * @throws JSONException
+	 */
+	public static List<Query> parse(String xml) throws SAXException,
+			JSONException {
+		List<Query> found = new ArrayList<Query>();
+		Document dom = createDom(xml);
+		JSONObject json = extractJson(dom);
+		List<Element> conversations = extractConversations(dom);
+		for (Element conversation : conversations) {
+			// The last message in the conversation is the only one we
+			// care about. If it is from us, ignore it, because we've dealt
+			// with that coversation, if it is from someone else, then we
+			// have a new query.
+			String id = conversation.getAttribute("id");
+			Element lastmsg = extractLastMessage(conversation);
+			// there is only one message per row, so grab index 0
+			String from = extractFromField(lastmsg);
+			// If from someone else, process it
+			if (!from.equals("Me:")) {
+				Query query = buildQuery(id, lastmsg, json);
+				found.add(query);
+			}
+		}
+
+		return found;
+	}
+
+	/**
+	 * A helper method to trim out the CDATA bits and html refrences in what
+	 * google returns. This seems incredibly hacky, but necessary for the dom
+	 * processor to work.
+	 * 
+	 * @param in
+	 * @return
+	 * @throws IOException
+	 */
+	private static String removeNastyBits(String in) {
+		String clean = in;
+		clean = clean.replaceAll("<..CDATA.", "");
+		clean = clean.replaceAll("\\]\\]>", "");
+		clean = clean.replaceAll("&nbsp;", "");
+		clean = clean.replaceAll("&copy;", "");
+		// The following needs to be scrubbed because of url queries that java's
+		// parser interprets as entities. This is a non-greedy replace that
+		// should catch every url with an ampersand in it.
+		clean = clean.replaceAll("href=\"http://.*?&.*?\"", "");
+		return clean;
+
+	}
 
 }
