@@ -39,7 +39,7 @@ public class GoogleXmlParserTest {
 		if (q1.getKeyword() != null || q2.getKeyword() != null) {
 			assertTrue(q1.getKeyword().equals(q2.getKeyword()));
 		}
-		assertTrue(!q1.getTimeReceived().equals(q2.getTimeReceived()));
+		assertTrue(!q1.getTimeSent().equals(q2.getTimeSent()));
 	}
 
 }

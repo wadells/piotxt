@@ -8,6 +8,9 @@ import java.util.Date;
  * stored and accessible in this class.
  */
 public class Query {
+	
+	/** The time the sms was sent. */
+	private final Date timeSent;
 
 	/** The time the request was received. */
 	private final Date timeReceived;
@@ -30,15 +33,16 @@ public class Query {
 	/**
 	 * Create a new query, ready to be processed.
 	 * 
-	 * @param timeReceived
-	 *            the time the query was recieved
+	 * @param timeSent
+	 *            the time the sms was sent
 	 * @param body
 	 *            the body of the text message
 	 * @param phoneNumber
 	 *            the sending phone number
 	 */
-	public Query(Date timeReceived, String body, String phoneNumber) {
-		this.timeReceived = timeReceived;
+	public Query(Date timeSent, String body, String phoneNumber) {
+		this.timeSent = timeSent;
+		this.timeReceived = new Date();
 		this.body = body;
 		this.keyword = Keywords.instance().extract(body);
 		this.phoneNumber = phoneNumber;
@@ -69,8 +73,8 @@ public class Query {
 		return timeResponded;
 	}
 
-	public String toString() {
-		return phoneNumber + " " + timeReceived.toString() + " " + body;
+	public Date getTimeSent() {
+		return timeSent;
 	}
 
 	public void setResponse(String response) {
@@ -79,6 +83,10 @@ public class Query {
 
 	public void setTimeResponded(Date timeResponded) {
 		this.timeResponded = timeResponded;
+	}
+
+	public String toString() {
+		return phoneNumber + " " + timeReceived.toString() + " " + body;
 	}
 
 }
