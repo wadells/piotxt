@@ -14,11 +14,24 @@ import com.techventus.server.voice.exception.CaptchaRequiredException;
 import core.Query;
 import static sms.GoogleXmlParser.*;
 
+/**
+ * A connection to send and recieve texts from Google Voice. The setup() method
+ * must be called before any other request, and can be called again to refresh
+ * the connection. This connection is pull only and must have the
+ * getNewMessages() method actively called to recieve messages.
+ */
 public class GvConnection implements SmsConnection {
 
+	/** The file where the connection information is stored. */
 	private final static String PROPERTY_FILE = "resources/pio_text.properties";
+
+	/** The username of the account this connects to. */
 	private final String username;
+
+	/** The password to login to the account. */
 	private final String password;
+
+	/** The pre-processing connection supplied by the google-voice-java library. */
 	private Voice voice;
 
 	/**
@@ -54,18 +67,14 @@ public class GvConnection implements SmsConnection {
 
 	@Override
 	public List<Query> getNewMessages() throws SmsRecieveException {
-		// TODO: implement this
+		List<Query> messages = null;
 		try {
 			String page = voice.getSMS();
-			
+			messages = parse(page);
 		} catch (IOException e) {
 			throw new SmsRecieveException(e);
 		}
-		return null;
-	}
-
-	String getRawSmsData() throws IOException {
-		return voice.getSMS();
+		return messages;
 	}
 
 	@Override
@@ -78,7 +87,8 @@ public class GvConnection implements SmsConnection {
 	}
 
 	/**
-	 * Connects to Google Voice.  This must be called before any other methods may be called.
+	 * Connects to Google Voice. This must be called before any other methods
+	 * may be called.
 	 * 
 	 * @throws IOException
 	 */
@@ -95,15 +105,15 @@ public class GvConnection implements SmsConnection {
 			System.exit(1);
 		}
 	}
-	
+
 	/**
-	 * Load a Properties File
+	 * Load a Properties file.
 	 * 
 	 * @param propsFile
 	 * @return Properties
 	 * @throws IOException
 	 */
-	private static Properties load(String propsFile) throws IOException {
+	static Properties load(String propsFile) throws IOException {
 		Properties result = null;
 		InputStream in = new FileInputStream(propsFile);
 		if (in != null) {
@@ -113,20 +123,12 @@ public class GvConnection implements SmsConnection {
 		return result;
 	}
 
+	// a simple test that prints all pending queries to the console
 	public static void main(String[] args) throws IOException {
 		GvConnection connection = new GvConnection();
-
 		connection.setup();
-		
-//		for (int i = 0; i < 5; i++) {
-//			String xml = connection.getRawSmsData();
-//			utils.FileUtils.writeFile("resources/gv_dump" + i + ".xml", xml, true);
-//			
-//		}
-
-		List<Query> list = parse(connection.getRawSmsData());
-		
-		System.out.println(list.size() + " new queries:\n");
+		List<Query> list = connection.getNewMessages();
+		System.out.println("\n" + list.size() + " new queries:");
 		for (Query q : list) {
 			System.out.println(Log.queryToString(q));
 		}
