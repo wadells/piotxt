@@ -2,39 +2,44 @@ package sms;
 
 import static org.junit.Assert.*;
 
+import gvjava.org.json.JSONException;
+
 import java.io.File;
+import java.io.IOException;
+import java.util.Date;
+import java.util.List;
 
 import org.junit.*;
+import org.xml.sax.SAXException;
 
 import core.Query;
+import static sms.GoogleXmlParser.*;
+import static utils.FileUtils.readFile;
 
 public class GoogleXmlParserTest {
-	
-	private String number1 = "1-503-777-7775";
-	private String number2 = "1-503-555-5555";
-	private String numberP = "1-503-893-4287";
 
 	@Test
-	public void testMessageParsing() {
-		File f = new File("resources/g_dump.xml");
-		
-		
+	public void testMessageParsing() throws IOException, SAXException,
+			JSONException {
+		File f = new File("resources/test_gv_dump.xml");
+		Query[] expected = new Query[] {
+				new Query(new Date(1288921051731l), "help", "+15037777777"),
+				new Query(new Date(1288945197661l), "Square", "+15035555555") };
+
+		String xml = readFile(f);
+		List<Query> parsed = parse(xml);
+		assertEqual(expected[0], parsed.get(0));
+		assertEqual(expected[1], parsed.get(1));
+
 	}
-	
-	private boolean queriesAreEqual(Query q1, Query q2) {
-		if (q1.getPhoneNumber().equals(q2.getPhoneNumber())) {
-			return false;
+
+	private void assertEqual(Query q1, Query q2) {
+		assertTrue(q1.getPhoneNumber().equals(q2.getPhoneNumber()));
+		assertTrue(q1.getBody().equals(q2.getBody()));
+		if (q1.getKeyword() != null || q2.getKeyword() != null) {
+			assertTrue(q1.getKeyword().equals(q2.getKeyword()));
 		}
-		if (!q1.getBody().equals(q2.getBody())) {
-			return false;
-		}
-		if (!q1.getKeyword().equals(q2.getKeyword())) {
-			return false;
-		}
-		if (!q1.getTimeReceived().equals(q2.getTimeReceived())) {
-			return false;
-		}
-		return true;
+		assertTrue(!q1.getTimeReceived().equals(q2.getTimeReceived()));
 	}
-	
+
 }
