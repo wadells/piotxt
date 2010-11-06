@@ -137,13 +137,17 @@ public class PioText {
 		List<Query> queries;
 		while (true) {
 			try {
-				System.out.println("Checking for messages.");
 				queries = connection.getNewMessages();
+				int newQueries = 0;
 				for (Query q : queries) {
 					if (!processed.contains(q)) {
+						newQueries++;
 						respondToQuery(q);
 						processed.add(q);
 					}
+				}
+				if (newQueries > 0) {
+					System.out.println(newQueries + " new queries.");
 				}
 			} catch (SmsRecieveException e) {
 				// TODO error log this
