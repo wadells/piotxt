@@ -23,6 +23,8 @@ import sms.SmsSendException;
  * This is a singleton.
  */
 public class PioText {
+	
+	public final static String VERSION = "piotxt-v0.5";
 
 	/** The file where setup information is stored. */
 	public final static File PROPERTY_FILE = new File(
@@ -139,8 +141,7 @@ public class PioText {
 				queries = connection.getNewMessages();
 				for (Query q : queries) {
 					if (!processed.contains(q)) {
-						System.out.println(q +" : " + q.hashCode());
-//						respondToQuery(q);
+						respondToQuery(q);
 						processed.add(q);
 					}
 				}

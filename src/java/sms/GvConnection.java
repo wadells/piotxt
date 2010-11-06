@@ -12,6 +12,7 @@ import com.techventus.server.voice.Voice;
 import com.techventus.server.voice.exception.CaptchaRequiredException;
 
 import static core.PioText.*;
+import core.PioText;
 import core.Query;
 import static sms.GoogleXmlParser.*;
 
@@ -49,7 +50,7 @@ public class GvConnection implements SmsConnection {
 	@Override
 	public void connect() throws ConnectionException {
 		try {
-			voice = new Voice(username, password);
+			voice = new Voice(username, password, PioText.VERSION, false);
 		} catch (CaptchaRequiredException e) {
 			String notice = String
 					.format(
