@@ -1,6 +1,7 @@
 package core;
 
 import java.util.Date;
+import static core.PioText.getPioText;
 
 /**
  * The fundamental object representing a users request from reception, until
@@ -8,7 +9,7 @@ import java.util.Date;
  * stored and accessible in this class.
  */
 public class Query {
-	
+
 	/** The time the sms was sent. */
 	private final Date timeSent;
 
@@ -44,13 +45,42 @@ public class Query {
 		this.timeSent = timeSent;
 		this.timeReceived = new Date();
 		this.body = body;
-		this.keyword = Keywords.instance().extract(body);
+		if (getPioText() != null) {
+			this.keyword = getPioText().extractKeyword(body);
+		} else {
+			this.keyword = new Keywords().extract(body);
+		}
 		this.phoneNumber = phoneNumber;
 
 	}
 
+	// This is important for tracking which queries have been processed by the
+	// system
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (!(obj instanceof Query)) {
+			return false;
+		}
+		Query that = (Query) obj;
+		if (this.timeSent.equals(that.timeSent) && this.phoneNumber.equals(that.phoneNumber) && this.body.equals(that.body)) {
+			return true;
+		}
+		return false;
+	}
+
 	public String getBody() {
 		return body;
+	}
+
+	// This is important for tracking which queries have been processed by the
+	// system
+	@Override
+	public int hashCode() {
+		String prehash = timeSent.getTime() + phoneNumber;
+		return prehash.hashCode();
 	}
 
 	public String getKeyword() {
@@ -86,7 +116,7 @@ public class Query {
 	}
 
 	public String toString() {
-		return phoneNumber + " " + timeReceived.toString() + " " + body;
+		return phoneNumber + " " + timeSent.toString() + " " + body;
 	}
 
 }

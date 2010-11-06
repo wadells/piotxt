@@ -2,9 +2,7 @@ package sms;
 
 import gvjava.org.json.JSONException;
 
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 import java.util.Properties;
 
@@ -13,6 +11,7 @@ import org.xml.sax.SAXException;
 import com.techventus.server.voice.Voice;
 import com.techventus.server.voice.exception.CaptchaRequiredException;
 
+import static core.PioText.*;
 import core.Query;
 import static sms.GoogleXmlParser.*;
 
@@ -24,9 +23,6 @@ import static sms.GoogleXmlParser.*;
  */
 public class GvConnection implements SmsConnection {
 
-	/** The file where the connection information is stored. */
-	private final static String PROPERTY_FILE = "resources/pio_text.properties";
-
 	/** The username of the account this connects to. */
 	private final String username;
 
@@ -35,23 +31,6 @@ public class GvConnection implements SmsConnection {
 
 	/** The pre-processing connection supplied by the google-voice-java library. */
 	private Voice voice;
-
-	/**
-	 * Creates a new connection to a Google Voice voice accoutnt from parameters
-	 * stored in the PROPERTY_FILE. The connection then needs to be setup().
-	 * 
-	 * @throws IOException
-	 */
-	public GvConnection() throws IOException {
-		try {
-			Properties props = load(PROPERTY_FILE);
-			username = props.getProperty("username");
-			password = props.getProperty("password");
-		} catch (IOException e) {
-			System.out.println("Could not read " + PROPERTY_FILE + ".");
-			throw e;
-		}
-	}
 
 	/**
 	 * Creates a new connection to a Google Voice voice accoutnt from the
@@ -65,6 +44,22 @@ public class GvConnection implements SmsConnection {
 	public GvConnection(String username, String password) {
 		this.username = username;
 		this.password = password;
+	}
+
+	@Override
+	public void connect() throws ConnectionException {
+		try {
+			voice = new Voice(username, password);
+		} catch (CaptchaRequiredException e) {
+			String notice = String
+					.format(
+							"A Google Voice captcha is required.\nImage URL  = %s\nCapt Token = %s\n\n",
+							e.getCaptchaUrl(), e.getCaptchaToken());
+			throw new ConnectionException(notice, e);
+		} catch (IOException e) {
+			throw new ConnectionException("Unable to connect to Google Voice.",
+					e);
+		}
 	}
 
 	@Override
@@ -100,47 +95,12 @@ public class GvConnection implements SmsConnection {
 		}
 	}
 
-	/**
-	 * Connects to Google Voice. This must be called before any other methods
-	 * may be called.
-	 * 
-	 * @throws IOException
-	 */
-	public void setup() throws IOException {
-
-		try {
-			voice = new Voice(username, password);
-		} catch (CaptchaRequiredException captEx) {
-			// TO DO: Intelligent handling of this instead of automatic shutdown
-			System.out.println("A captcha is required.");
-			System.out.println("Image URL  = " + captEx.getCaptchaUrl());
-			System.out.println("Capt Token = " + captEx.getCaptchaToken());
-			System.out.println("Goodbye.");
-			System.exit(1);
-		}
-	}
-
-	/**
-	 * Load a Properties file.
-	 * 
-	 * @param propsFile
-	 * @return Properties
-	 * @throws IOException
-	 */
-	static Properties load(String propsFile) throws IOException {
-		Properties result = null;
-		InputStream in = new FileInputStream(propsFile);
-		if (in != null) {
-			result = new Properties();
-			result.load(in); // Can throw IOException
-		}
-		return result;
-	}
-
 	// a simple test that prints all pending queries to the console
 	public static void main(String[] args) throws IOException {
-		GvConnection connection = new GvConnection();
-		connection.setup();
+		Properties props = load(PROPERTY_FILE);
+		GvConnection connection = new GvConnection(
+				props.getProperty("gv_user"), props.getProperty("gv_pass"));
+		connection.connect();
 		// String filename = "resources/gv_dump";
 		// for ( int i = 0; i < 5; i++) {
 		// utils.FileUtils.writeFile(filename + i + ".xml",

@@ -34,4 +34,13 @@ public interface SmsConnection {
 	 */
 	public void sendSms(String number, String message) throws SmsSendException;
 
+	/**
+	 * Connects to the service. This must be called before any other methods may
+	 * be called.
+	 * 
+	 * @throws ConnectioException
+	 *             if unable to connect
+	 */
+	public void connect() throws ConnectionException;
+
 }

@@ -13,7 +13,7 @@ public abstract class MessageHandlerTest {
 
 	protected final String timeString = STD_DATE_FORM.format(time);
 
-	protected final Keywords keywords = Keywords.instance();
+	protected final Keywords keywords = new Keywords();
 
 	protected final String phone = "123-456-7890";
 

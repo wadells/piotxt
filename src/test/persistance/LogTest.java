@@ -11,12 +11,11 @@ import java.util.Date;
 
 import org.junit.*;
 
-import core.Keywords;
 import core.Query;
 import static persistance.Log.*;
 
 public class LogTest {
-	
+
 	// constants
 	private final Date then = new Date();
 	private final String phone = "123-456-7890";
@@ -24,7 +23,6 @@ public class LogTest {
 
 	private Log log;
 	private Date now;
-
 
 	@Before
 	public void setUp() {
@@ -66,7 +64,7 @@ public class LogTest {
 		}
 		assertEquals(then.toString(), time.toString());
 		String keyword = pts[3].substring(1, pts[3].length() - 1);
-		assertTrue(Keywords.instance().contains(keyword));
+		assertTrue(keyword.equals("hour"));
 
 	}
 
