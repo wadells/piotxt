@@ -6,8 +6,7 @@ import static core.Keywords.*;
 /** A message handler that performs a simple lookup in from a weekly schedule. */
 public class TableHandler extends MessageHandler {
 
-	protected TableHandler(Keywords keywords) {
-		super(keywords);
+	protected TableHandler() {
 	}
 
 	@Override

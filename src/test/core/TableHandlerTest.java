@@ -7,7 +7,7 @@ public class TableHandlerTest extends MessageHandlerTest {
 
 	@Before
 	public void setUp() {
-		handler = new TableHandler(new Keywords());
+		handler = new TableHandler();
 	}
-	
+
 }

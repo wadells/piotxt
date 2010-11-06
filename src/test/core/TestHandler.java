@@ -3,10 +3,8 @@ package core;
 import java.util.Date;
 
 public class TestHandler extends MessageHandler {
-	
 
 	protected TestHandler() {
-		super(new Keywords());
 		keywords.add("zork", "easter egg");
 		keywords.add("lc", "Undergraduate campus");
 		keywords.add("templeton", "the raz stop at Templeton");

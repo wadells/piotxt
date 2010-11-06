@@ -1,7 +1,6 @@
 package core;
 
 import java.util.Date;
-import static core.PioText.getPioText;
 
 /**
  * The fundamental object representing a users request from reception, until
@@ -26,7 +25,7 @@ public class Query {
 	private final String phoneNumber;
 
 	/** A system recognized keyword or null. */
-	private final String keyword;
+	private String keyword;
 
 	/** The appropriate response to the message. */
 	private String response;
@@ -45,11 +44,6 @@ public class Query {
 		this.timeSent = timeSent;
 		this.timeReceived = new Date();
 		this.body = body;
-		if (getPioText() != null) {
-			this.keyword = getPioText().extractKeyword(body);
-		} else {
-			this.keyword = new Keywords().extract(body);
-		}
 		this.phoneNumber = phoneNumber;
 
 	}
@@ -65,7 +59,9 @@ public class Query {
 			return false;
 		}
 		Query that = (Query) obj;
-		if (this.timeSent.equals(that.timeSent) && this.phoneNumber.equals(that.phoneNumber) && this.body.equals(that.body)) {
+		if (this.timeSent.equals(that.timeSent)
+				&& this.phoneNumber.equals(that.phoneNumber)
+				&& this.body.equals(that.body)) {
 			return true;
 		}
 		return false;
@@ -73,14 +69,6 @@ public class Query {
 
 	public String getBody() {
 		return body;
-	}
-
-	// This is important for tracking which queries have been processed by the
-	// system
-	@Override
-	public int hashCode() {
-		String prehash = timeSent.getTime() + phoneNumber;
-		return prehash.hashCode();
 	}
 
 	public String getKeyword() {
@@ -105,6 +93,18 @@ public class Query {
 
 	public Date getTimeSent() {
 		return timeSent;
+	}
+
+	// This is important for tracking which queries have been processed by the
+	// system
+	@Override
+	public int hashCode() {
+		String prehash = timeSent.getTime() + phoneNumber;
+		return prehash.hashCode();
+	}
+
+	public void setKeyword(String keyword) {
+		this.keyword = keyword;
 	}
 
 	public void setResponse(String response) {

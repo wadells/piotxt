@@ -19,11 +19,9 @@ import sms.SmsSendException;
 
 /**
  * The main program manager. This is what should be run in a jar.
- * <p>
- * This is a singleton.
  */
 public class PioText {
-	
+
 	public final static String VERSION = "piotxt-v0.5";
 
 	/** The file where setup information is stored. */
@@ -48,14 +46,8 @@ public class PioText {
 	/** The message handler that will process queries. */
 	private MessageHandler handler;
 
-	/** The global list of keywords that the system will process. */
-	private Keywords keywords;
-
 	/** The connection to send and recieve sms through */
 	private SmsConnection connection;
-
-	/** The singleton instance of PioText. */
-	private static PioText instance;
 
 	/**
 	 * Creates a new PioText with the given properties.
@@ -63,7 +55,6 @@ public class PioText {
 	 * @param props
 	 */
 	protected PioText(Properties props) {
-		keywords = new Keywords();
 		String gvUsername = props.getProperty("gv_user");
 		String gvPassword = props.getProperty("gv_pass");
 		connection = new GvConnection(gvUsername, gvPassword);
@@ -84,8 +75,7 @@ public class PioText {
 		System.out.println("Sucessfully loaded properties!");
 
 		// set up pio text
-		createPioText(props);
-		PioText piotxt = getPioText();
+		PioText piotxt = new PioText(props);
 		try {
 			piotxt.initialize();
 		} catch (ConnectionException e) {
@@ -98,21 +88,6 @@ public class PioText {
 
 		// run
 		piotxt.run();
-	}
-
-	/**
-	 * Creates a new singleton PioText. Must be done before getPioText() can be
-	 * called.
-	 */
-	public static void createPioText(Properties props) {
-		instance = new PioText(props);
-	}
-
-	/**
-	 * @return the singleton instance of PioText
-	 */
-	public static PioText getPioText() {
-		return instance;
 	}
 
 	/**
@@ -166,13 +141,14 @@ public class PioText {
 		}
 	}
 
-	private void respondToQuery(Query q) {
-		String response = handler.getResponse(q);
+	private void respondToQuery(Query query) {
+		handler.identifyKeyword(query);
+		String response = handler.getResponse(query);
 		try {
-			connection.sendSms(q.getPhoneNumber(), response);
-			q.setTimeResponded(new Date());
-			q.setResponse(response);
-			log(q);
+			connection.sendSms(query.getPhoneNumber(), response);
+			query.setTimeResponded(new Date());
+			query.setResponse(response);
+			log(query);
 		} catch (SmsSendException e) {
 			// TODO error log this
 			e.printStackTrace();
@@ -182,18 +158,6 @@ public class PioText {
 	/** Initializes the sms connection. */
 	public void initialize() throws ConnectionException {
 		connection.connect();
-	}
-
-	/**
-	 * Extracts a keyword from a messge based on the keywords this PioText
-	 * recognizes.
-	 * 
-	 * @param message
-	 *            the body of a sms
-	 * @return the keyword
-	 */
-	public String extractKeyword(String message) {
-		return keywords.extract(message);
 	}
 
 }
