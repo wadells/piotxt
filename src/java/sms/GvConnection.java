@@ -12,6 +12,7 @@ import com.techventus.server.voice.Voice;
 import com.techventus.server.voice.exception.CaptchaRequiredException;
 
 import static core.PioText.*;
+import core.PioText;
 import core.Query;
 import static sms.GoogleXmlParser.*;
 
@@ -49,7 +50,7 @@ public class GvConnection implements SmsConnection {
 	@Override
 	public void connect() throws ConnectionException {
 		try {
-			voice = new Voice(username, password);
+			voice = new Voice(username, password, PioText.VERSION, false);
 		} catch (CaptchaRequiredException e) {
 			String notice = String
 					.format(
@@ -64,19 +65,41 @@ public class GvConnection implements SmsConnection {
 
 	@Override
 	public List<Query> getNewMessages() throws SmsRecieveException {
-		List<Query> messages = null;
+		// retrieve from GV
+		String page = null;
 		try {
-			String page = voice.getSMS();
-			messages = parse(page);
+			page = voice.getSMS();	
 		} catch (IOException e) {
 			throw new SmsRecieveException(
 					"Could retrieve sms from Google Voice.", e);
+		}
+		
+		// once retrieved, parse xml
+		List<Query> messages = null;
+		try {
+			messages = parse(page);
 		} catch (SAXException e) {
+			// can't parse the xml, then save it for analysis
+			String url = String.format("log/unparsable_%03d.xml", page.hashCode());
+			try {
+				utils.FileUtils.writeFile(url, page, true);
+			} catch (IOException ignored) {
+				// ideally this will never happen
+				ignored.printStackTrace();
+			}
 			throw new SmsRecieveException(
-					"Could not parse sms xml returned by Google Voice.", e);
+					"Could not parse sms xml returned by Google Voice. Saving xml.", e);
 		} catch (JSONException e) {
+			// can't parse the json, then save it for analysis
+			String url = String.format("log/unparsable_%03d.xml", page.hashCode());
+			try {
+				utils.FileUtils.writeFile(url, page, true);
+			} catch (IOException ignored) {
+				// ideally this will never happen
+				ignored.printStackTrace();
+			}
 			throw new SmsRecieveException(
-					"Could not parse json returned by Google Voice.", e);
+					"Could not parse json returned by Google Voice. Saving xml.", e);
 		}
 		return messages;
 	}

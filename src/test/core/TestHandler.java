@@ -25,7 +25,7 @@ public class TestHandler extends MessageHandler {
 			}
 			return "Keyword recognized: " + query.getKeyword();
 		}
-		return "Keyword unrecognized.";
+		return defaultMessage(query.getTimeReceived());
 	}
 
 }
