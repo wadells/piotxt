@@ -14,7 +14,9 @@ import core.Query;
  * A log of all requests received. This class follows the Singleton pattern. The
  * log file format is:
  * 
- * <pre>phonehash S[MM/dd/yyyy@hh:mm:ss] R[MM/dd/yyyy@hh:mm:ss] {keyword} "flattened text of message"</pre>
+ * <pre>
+ * fonehash S[MM/dd/yyyy@hh:mm:ss] R[MM/dd/yyyy@hh:mm:ss] (systinfo) {keyword} "flattened text of message"
+ * </pre>
  * 
  * For further discussion of log format check out the wiki entry at:
  * <p>
@@ -29,7 +31,8 @@ public class Log {
 	public static final SimpleDateFormat LOG_DATE_FORM = new SimpleDateFormat(
 			"MM/dd/yyyy@kk:mm:ss");
 
-	public static final File LOG_FILE = new File("raz.log");
+	/** The file that this log saves to. */
+	public static final File LOG_FILE = new File("log/raz.log");
 
 	/** The total number of text messages processed by this instance of log. */
 	private int total;
@@ -64,11 +67,9 @@ public class Log {
 	}
 
 	/**
-	 * Returns a single line log format of a message. This <em>is</em> lossy
-	 * because data about the phone number is hashed and the response to the
-	 * message is wiped. All other data is recorded in a compact format though.
+	 * Returns a single line log format of a message. For example
 	 * <p>
-	 * The first three field should all be justified / equally spaced. The phone
+	 * The first four fields should all be justified / equally spaced. The phone
 	 * number is hashed because we want to know about user statistics, but
 	 * storing peoples phone number is just creepy. Currently it isn't a secure
 	 * hash, but that could be fixed if security becomes an issue.
@@ -80,21 +81,14 @@ public class Log {
 	 * @return the string representing the query
 	 */
 	public static String queryToString(Query q) {
-		String date = LOG_DATE_FORM.format(q.getTimeReceived());
-		String time;
-		if (q.getTimeResponded() == null) {
-			time = "------";
-		} else {
-			long dt = q.getTimeResponded().getTime()
-					- q.getTimeReceived().getTime();
-			time = String.format("%06d", dt);
-		}
-		String keyword = q.getKeyword() == null ? "-" : q.getKeyword();
-
 		String phonehash = String.format("%08x", q.getPhoneNumber().hashCode());
-		String message = flatten(q.getBody());
-		return String.format("[%s] [%5s] %s {%s} \"%s\"", date, time,
-				phonehash, keyword, message);
+		String sent = LOG_DATE_FORM.format(q.getTimeSent());
+		String responded = LOG_DATE_FORM.format(q.getTimeResponded());
+		String sysinfo = "--------"; // TODO : put actuall system information here
+		String keyword = q.getKeyword() == null ? "null" : q.getKeyword();
+		String body = flatten(q.getBody());
+		return String.format("%s S[%s] R[%s] (%s) {%s} \"%s\"", phonehash,
+				sent, responded, sysinfo, keyword, body);
 	}
 
 	/**
@@ -168,8 +162,9 @@ public class Log {
 			Query q = new Query(then, "help", Math.random() * Integer.MAX_VALUE
 					+ "");
 			q.setResponse("no");
-			// q.setTimeResponded(new Date());
+			q.setTimeResponded(new Date());
 			System.out.println(queryToString(q));
+			System.out.println(new Date().getTime());
 		}
 	}
 }
