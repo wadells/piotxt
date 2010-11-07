@@ -14,18 +14,22 @@ import org.junit.*;
 import core.Query;
 import static persistance.Log.*;
 
-public class LogTest {
+public class MessageLogTest {
 
 	// a file that is created and deleted during testing
 	private static final File testFile = new File("log/test_message.log");
 	// used througout the tests
 	private final Date then = new Date();
+	private final Date now = new Date(then.getTime() + 54321l);
 	private final String phone = "+15551118888";
+	Query query = new Query(then, "keyword {&\\rawr\"junk data", phone);
 	private Log log;
 
 	@Before
 	public void setUp() {
 		log = new Log(testFile);
+		query.setTimeResponded(now);
+		query.setKeyword("keyword");
 	}
 
 	@Test
@@ -49,12 +53,7 @@ public class LogTest {
 	 */
 	@Test
 	public void testFormat() {
-		Date now = new Date();
-		String body = "keyword {&\\rawr\"junk data";
-		Query q = new Query(then, body, phone);
-		q.setTimeResponded(now);
-		q.setKeyword("keyword");
-		String test = Log.queryToString(q);
+		String test = Log.queryToString(query);
 
 		// check whitespace
 		assertEquals(' ', test.charAt(8));
@@ -66,7 +65,7 @@ public class LogTest {
 		String[] pts = test.split("\"", 2);
 		// check body
 		String b = pts[1].substring(0, pts[1].length() - 1); // message body
-		assertEquals(body, b);
+		assertEquals(query.getBody(), b);
 
 		// check other data
 		String[] parts = pts[0].split(" ");
@@ -94,7 +93,7 @@ public class LogTest {
 		} catch (ParseException e) {
 			assert false : "Recieve date in log unparseable: " + parts[2];
 		}
-		 assertEquals(then.toString(), r.toString());
+		 assertEquals(now.toString(), r.toString());
 
 		// sysinfo
 		assertEquals(10, parts[3].length());
@@ -122,7 +121,7 @@ public class LogTest {
 	public void testSave() {
 		int n = 30;
 		for (int i = 0; i < n; i++) {
-			log.record(new Query(then, "help", phone));
+			log.record(query);
 		}
 		int lines = countLines(testFile);
 		assertEquals(n, lines);
@@ -135,11 +134,11 @@ public class LogTest {
 		int n = 20;
 		// record first batch
 		for (int i = 0; i < n; i++) {
-			log.record(new Query(then, "hour", phone));
+			log.record(query);
 		}
 		assertEquals(n, countLines(testFile));
 		for (int i = 0; i < n; i++) {
-			log.record(new Query(then, "help", phone));
+			log.record(query);
 		}
 		assertEquals(2 * n, countLines(testFile));
 		testFile.delete();
