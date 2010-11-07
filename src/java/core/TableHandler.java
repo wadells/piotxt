@@ -17,6 +17,7 @@ public class TableHandler extends MessageHandler {
 
 	@Override
 	public String getResponse(Query q) {
+		identifyKeyword(q);
 		if (q.getKeyword() == null) {
 			return defaultMessage(q.getTimeReceived());
 		} else if (q.getKeyword().equals(KEY_HELP)) {
