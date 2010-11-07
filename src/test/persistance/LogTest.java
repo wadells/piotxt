@@ -16,18 +16,16 @@ import static persistance.Log.*;
 
 public class LogTest {
 
-	// constants
+	// a file that is created and deleted during testing
+	private static final File testFile = new File("log/test_message.log");
+	// used througout the tests
 	private final Date then = new Date();
 	private final String phone = "+15551118888";
-	private static final File testFile = new File("test.log");
-
 	private Log log;
-	private Date now;
 
 	@Before
 	public void setUp() {
 		log = new Log(testFile);
-		now = new Date();
 	}
 
 	@Test
@@ -39,33 +37,76 @@ public class LogTest {
 
 	}
 
-	/*
+	/**
 	 * BEFORE EDITING THIS: Are you sure you want to change the log format? This
 	 * may make past logs incompatible.
+	 * 
+	 * Current log format:
+	 * 
+	 * <pre>
+	 * fonehash S[MM/dd/yyyy@hh:mm:ss] R[MM/dd/yyyy@hh:mm:ss] (systinfo) {keyword} "flattened text of message"
+	 * </pre>
 	 */
 	@Test
 	public void testFormat() {
-		Query q = new Query(then, "hour", phone);
+		Date now = new Date();
+		String body = "keyword {&\\rawr\"junk data";
+		Query q = new Query(then, body, phone);
 		q.setTimeResponded(now);
-		q.setKeyword("hour");
-		String format = Log.queryToString(q);
-		assertTrue(format.charAt(0) == '[');
-		assertTrue(format.charAt(20) == ']');
-		assertTrue(format.charAt(22) == '[');
-		assertTrue(format.charAt(29) == ']');
-		assertTrue(format.charAt(40) == '{');
-		String[] pts = format.split(" ");
-		assertEquals(5, pts.length);
-		String date = pts[0].substring(1, pts[0].length() - 1);
-		Date time = null;
+		q.setKeyword("keyword");
+		String test = Log.queryToString(q);
+
+		// check whitespace
+		assertEquals(' ', test.charAt(8));
+		assertEquals(' ', test.charAt(31));
+		assertEquals(' ', test.charAt(54));
+		assertEquals(' ', test.charAt(65));
+
+		// split on leftmost quotations
+		String[] pts = test.split("\"", 2);
+		// check body
+		String b = pts[1].substring(0, pts[1].length() - 1); // message body
+		assertEquals(body, b);
+
+		// check other data
+		String[] parts = pts[0].split(" ");
+
+		// eight char phonehash
+		assertEquals(8, parts[0].length());
+
+		// sent time
+		assertEquals(22, parts[1].length());
+		String sent = parts[1].substring(2, parts[1].length() - 1);
+		Date s = null;
 		try {
-			time = LOG_DATE_FORM.parse(date);
+			s = LOG_DATE_FORM.parse(sent);
 		} catch (ParseException e) {
-			assert false : "Date in log unparseable: " + date;
+			assert false : "Sent date in log unparseable: " + parts[1];
 		}
-		assertEquals(then.toString(), time.toString());
-		String keyword = pts[3].substring(1, pts[3].length() - 1);
-		assertTrue(keyword.equals("hour"));
+		 assertEquals(then.toString(), s.toString());
+
+		// responded time
+		assertEquals(22, parts[2].length());
+		String recieved = parts[2].substring(2, parts[2].length() - 1);
+		Date r = null;
+		try {
+			r = LOG_DATE_FORM.parse(recieved);
+		} catch (ParseException e) {
+			assert false : "Recieve date in log unparseable: " + parts[2];
+		}
+		 assertEquals(then.toString(), r.toString());
+
+		// sysinfo
+		assertEquals(10, parts[3].length());
+		assertEquals('(', parts[3].charAt(0));
+		assertEquals(')', parts[3].charAt(9));
+
+		// keyword
+		int lastchar = parts[4].length() - 1;
+		assertEquals('{', parts[4].charAt(0));
+		assertEquals('}', parts[4].charAt(lastchar));
+		String k = parts[4].substring(1, lastchar);
+		assertTrue(k.equals("keyword"));
 	}
 
 	@Test
