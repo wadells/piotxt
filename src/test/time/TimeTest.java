@@ -92,19 +92,20 @@ public class TimeTest {
 
 	@Test
 	public void testCompare() {
-		// TODO: Rework this
-		time = new Time(SUNDAY, 0, 01);
+		time = new Time(MONDAY, 0, 01);
 		Time t1 = new Time(SATURDAY, 0, 00);
-		assertTrue(time.compareTo(t1) < 0 && t1.compareTo(time) > 0);
+		try {
+			assertTrue(time.compareTo(t1) < 0 && t1.compareTo(time) > 0);
+			fail("No exception thrown");
+		} catch (UnsupportedOperationException e) {
+			// We expect to be unable to compare different days
+		}
 
 		t1 = new Time(MONDAY, 12, 0);
 		assertTrue(t1.compareTo(time) > 0);
 
 		time = new Time(MONDAY, 12, 0);
 		assertTrue(time.compareTo(t1) == time.compareTo(t1) && time.compareTo(t1) == 0);
-
-		t1 = new Time(TUESDAY, 12, 0);
-		assertTrue(time.compareTo(t1) < 0);
 
 		t1 = new Time(MONDAY, 11, 59);
 		assertTrue(time.compareTo(t1) > 0 && t1.compareTo(time) < 0);

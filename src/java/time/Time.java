@@ -121,7 +121,7 @@ public class Time implements Comparable<Time> {
 	}
 
 	public boolean equalToTime(Time t) {
-		return this.compareTo(t) == 0;
+		return t.day == this.day && t.hours == this.hours && t.minutes == this.minutes;
 	}
 
 	public Day getDay() {

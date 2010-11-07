@@ -64,6 +64,7 @@ public class TimeRangeTest {
 		assertFalse(r.isInRange(t2));
 	}
 	
+	@Test
 	public void testIsInRangeSameDay() {
 		Time t1 = new Time(SATURDAY, 12, 00);
 		Time t2 = new Time(SATURDAY, 23, 59);
@@ -77,8 +78,7 @@ public class TimeRangeTest {
 		
 		// Test inclusion
 		assertTrue(r.isInRange(new Time(SATURDAY, 13, 00)));
-		assertTrue(r.isInRange(new Time(SATURDAY, 1, 21)));
-		assertTrue(r.isInRange(new Time(SATURDAY, 5, 33)));
+		assertTrue(r.isInRange(new Time(SATURDAY, 15, 33)));
 		assertTrue(r.isInRange(new Time(SATURDAY, 19, 00)));
 		assertTrue(r.isInRange(new Time(SATURDAY, 23, 45)));
 		
@@ -95,13 +95,52 @@ public class TimeRangeTest {
 	}
 
 	@Test
-	public void testIntersect() {
-		fail("Not yet implemented");
-	}
-
-	@Test
-	public void testOverlaps() {
-		fail("Not yet implemented");
+	public void testIntersection() {
+		// Test null intersection
+		Time t1 = new Time(SATURDAY, 12, 00);
+		Time t2 = new Time(SUNDAY, 23, 59);
+		assertTrue(new TimeRange(t1, t2).intersect(new TimeRange(t2, t1)).isEmpty());
+		// Ensure this agrees with doesIntersect
+		assertFalse(new TimeRange(t1, t2).doesIntersect(new TimeRange(t2, t1)));
+		
+		// Test same start, different end
+		Time t3 = new Time(WEDNESDAY, 15, 20);
+		TimeRange i = new TimeRange(t1, t2).intersect(new TimeRange(t1, t3));
+		assertTrue(new TimeRange(t1, t2).doesIntersect(new TimeRange(t1, t3)));
+		assertTrue(i.isInRange(t1));
+		assertTrue(i.isInRange(new Time(SUNDAY, 6, 30)));
+		assertTrue(i.isInRange(new Time(SUNDAY, 23, 58)));
+		assertFalse(i.isInRange(t2));
+		assertFalse(i.isInRange(new Time(MONDAY, 5, 58)));
+		
+		// Test same end, different start
+		t3 = new Time(WEDNESDAY, 15, 20);
+		i = new TimeRange(t1, t3).intersect(new TimeRange(t2, t3));
+		assertTrue(i.isInRange(t2));
+		assertTrue(i.isInRange(new Time(MONDAY, 5, 58)));
+		assertTrue(i.isInRange(new Time(WEDNESDAY, 15, 19)));
+		assertFalse(i.isInRange(t1));
+		assertFalse(i.isInRange(t3));
+		assertFalse(i.isInRange(new Time(SUNDAY, 6, 30)));
+		
+		// Test subset
+		Time t4 = new Time(TUESDAY, 9, 00);
+		i = new TimeRange(t1, t3).intersect(new TimeRange(t2, t4));
+		assertTrue(i.isInRange(t2));
+		assertTrue(i.isInRange(new Time(MONDAY, 5, 58)));
+		assertFalse(i.isInRange(t1));
+		assertFalse(i.isInRange(t3));
+		assertFalse(i.isInRange(t4));
+		assertFalse(i.isInRange(new Time(TUESDAY, 12, 15)));
+		
+		// Test reflexivity (same as above, but the intersect call is reversed)
+		i = new TimeRange(t2, t4).intersect(new TimeRange(t1, t3));
+		assertTrue(i.isInRange(t2));
+		assertTrue(i.isInRange(new Time(MONDAY, 5, 58)));
+		assertFalse(i.isInRange(t1));
+		assertFalse(i.isInRange(t3));
+		assertFalse(i.isInRange(t4));
+		assertFalse(i.isInRange(new Time(TUESDAY, 12, 15)));
 	}
 
 }

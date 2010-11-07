@@ -56,7 +56,7 @@ public class FileParser {
 		try {
 			reader = new BufferedReader(new FileReader(file));
 		} catch (FileNotFoundException e) {
-			throw new IllegalArgumentException("Could not parse file.", e);
+			throw new IllegalArgumentException("Could not find file.", e);
 		}
 
 		lineNumber = 0;
