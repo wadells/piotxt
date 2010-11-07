@@ -14,9 +14,11 @@ import core.Query;
  * A log of all requests received. This class follows the Singleton pattern. The
  * log file format is:
  * 
- * <pre>
- * [MM/dd/yyyy@hh:mm:ss] [processing time] phonehash {keyword} "flattened text of message"
- * </pre>
+ * <pre>phonehash S[MM/dd/yyyy@hh:mm:ss] R[MM/dd/yyyy@hh:mm:ss] {keyword} "flattened text of message"</pre>
+ * 
+ * For further discussion of log format check out the wiki entry at:
+ * <p>
+ * http://github.com/javins/piotxt/wiki/Message-Logging-and-Statistics
  */
 public class Log {
 
@@ -62,9 +64,9 @@ public class Log {
 	}
 
 	/**
-	 * Returns a single line log format of a message.  This <em>is</em> lossy
+	 * Returns a single line log format of a message. This <em>is</em> lossy
 	 * because data about the phone number is hashed and the response to the
-	 * message is wiped.  All other data is recorded in a compact format though.
+	 * message is wiped. All other data is recorded in a compact format though.
 	 * <p>
 	 * The first three field should all be justified / equally spaced. The phone
 	 * number is hashed because we want to know about user statistics, but
@@ -73,7 +75,8 @@ public class Log {
 	 * 
 	 * @see {@link Log}
 	 * 
-	 * @param q the query to be flattened into a single log entry
+	 * @param q
+	 *            the query to be flattened into a single log entry
 	 * @return the string representing the query
 	 */
 	public static String queryToString(Query q) {
@@ -106,11 +109,11 @@ public class Log {
 		return s.replaceAll("\\s+", " ").trim();
 	}
 
-
-	/** 
-	* Records a single query in this log and occasionally saves the log to its file.
-	*
-	* @param query
+	/**
+	 * Records a single query in this log and occasionally saves the log to its
+	 * file.
+	 * 
+	 * @param query
 	 *            the query to be logged
 	 */
 	public void record(Query query) {
@@ -140,9 +143,12 @@ public class Log {
 	 * Saves a list of queries to a file. This appends the queries to the file
 	 * instead of overwriting.
 	 * 
-	 * @param queries a list of queries to be saved
-	 * @param file the file to append them to
-	 * @throws IOException if the file cannot be read
+	 * @param queries
+	 *            a list of queries to be saved
+	 * @param file
+	 *            the file to append them to
+	 * @throws IOException
+	 *             if the file cannot be read
 	 */
 	public static void save(List<Query> queries, File file) throws IOException {
 		boolean append = true;
