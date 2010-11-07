@@ -110,6 +110,10 @@ public class Time implements Comparable<Time> {
 		int dh = hours - o.hours, dm = minutes - o.minutes;
 		return (dh == 0 ? dm : dh);
 	}
+	
+	public boolean equalToTime(Time t) {
+		return this.compareTo(t) == 0;
+	}
 
 	public Day getDay() {
 		return day;
