@@ -39,11 +39,11 @@ public class Stop {
 		this.direction = direction;
 	}
 
-	public String getStopName() {
+	public String getName() {
 		return stopName;
 	}
 
-	public String getStopKeyword() {
+	public String getKeyword() {
 		return stopKeyword;
 	}
 

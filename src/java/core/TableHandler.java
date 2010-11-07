@@ -1,12 +1,18 @@
 package core;
 
 import java.util.Date;
+import java.util.Properties;
+
 import static core.Keywords.*;
 
 /** A message handler that performs a simple lookup in from a weekly schedule. */
 public class TableHandler extends MessageHandler {
 
-	protected TableHandler() {
+	@Override
+	public void intialize(Properties props) {
+		super.intialize(props);
+
+		// TODO: Load in the schedule
 	}
 
 	@Override
