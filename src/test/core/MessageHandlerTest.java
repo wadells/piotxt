@@ -31,7 +31,7 @@ public abstract class MessageHandlerTest {
 
 	@Test
 	public void testHelp() {
-		String expected = "TXT4RAZ\n" //
+		String expected = "PioTxt\n" //
 				+ timeString + "\n";
 		for (String k : keywords.words()) {
 			expected += "\n" + k.toUpperCase() + " " + keywords.getDefinition(k);
