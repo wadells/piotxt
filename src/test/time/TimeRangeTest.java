@@ -42,9 +42,15 @@ public class TimeRangeTest {
 		TimeRange r = new TimeRange(t1, t2);
 		assertFalse(r.isEmpty());
 		
-		// Test boundaries
-		assertTrue(r.isInRange(t1));
-		assertFalse(r.isInRange(t2));
+		// Test exclusion
+		assertFalse(r.isInRange(new Time(MONDAY, 00, 00)));
+		assertFalse(r.isInRange(new Time(MONDAY, 14, 15)));
+		assertFalse(r.isInRange(new Time(TUESDAY, 14, 15)));
+		assertFalse(r.isInRange(new Time(WEDNESDAY, 14, 15)));
+		assertFalse(r.isInRange(new Time(THURSDAY, 14, 15)));
+		assertFalse(r.isInRange(new Time(FRIDAY, 14, 15)));
+		assertFalse(r.isInRange(new Time(SATURDAY, 00, 00)));
+		assertFalse(r.isInRange(new Time(SATURDAY, 11, 59)));
 		
 		// Test inclusion
 		assertTrue(r.isInRange(new Time(SATURDAY, 13, 00)));
@@ -53,15 +59,9 @@ public class TimeRangeTest {
 		assertTrue(r.isInRange(new Time(SUNDAY, 5, 33)));
 		assertTrue(r.isInRange(new Time(SUNDAY, 19, 00)));
 		
-		// Test exclusion
-		assertFalse(r.isInRange(new Time(SATURDAY, 00, 00)));
-		assertFalse(r.isInRange(new Time(SATURDAY, 11, 59)));
-		assertFalse(r.isInRange(new Time(MONDAY, 00, 00)));
-		assertFalse(r.isInRange(new Time(MONDAY, 14, 15)));
-		assertFalse(r.isInRange(new Time(TUESDAY, 14, 15)));
-		assertFalse(r.isInRange(new Time(WEDNESDAY, 14, 15)));
-		assertFalse(r.isInRange(new Time(THURSDAY, 14, 15)));
-		assertFalse(r.isInRange(new Time(FRIDAY, 14, 15)));
+		// Test boundaries
+		assertTrue(r.isInRange(t1));
+		assertFalse(r.isInRange(t2));
 	}
 	
 	public void testIsInRangeSameDay() {

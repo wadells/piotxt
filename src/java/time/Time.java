@@ -103,14 +103,23 @@ public class Time implements Comparable<Time> {
 		return new Time(d, MathUtils.mod(h, 24), MathUtils.mod(m, 60));
 	}
 
+	/**
+	 * Compares two times within a given day, where midnight is the first ordinal time and 23:59 is the last.
+	 * 
+	 * @throws UnsupportedOperationException
+	 *             if the times being compared fall on different days--since the
+	 *             week is a ring, those times are both "before" and "after"
+	 *             each other.
+	 * 
+	 */
 	public int compareTo(Time o) {
 		if (day != o.day) {
-			return day.compareTo(o.day);
+			throw new UnsupportedOperationException();
 		}
 		int dh = hours - o.hours, dm = minutes - o.minutes;
 		return (dh == 0 ? dm : dh);
 	}
-	
+
 	public boolean equalToTime(Time t) {
 		return this.compareTo(t) == 0;
 	}

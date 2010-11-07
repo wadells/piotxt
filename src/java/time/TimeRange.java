@@ -1,5 +1,7 @@
 package time;
 
+import static time.Day.daysBetween;
+
 /**
  * An immutable range representing the slice of time between the beginning and
  * the end.
@@ -40,7 +42,10 @@ public class TimeRange {
 		if(isEmpty())
 			return false;
 		
-		 return false;
+		if(!daysBetween(begin.getDay(), end.getDay()).contains(t.getDay()))
+			return false;
+		
+		return true;
 	}
 	
 	/** Returns the slice of time that exists in both ranges. */

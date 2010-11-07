@@ -44,10 +44,10 @@ public class FileParser {
 
 	private long lineNumber;
 
-	public FileParser(FileSchedule schedule, File file) {
+	public FileParser(FileSchedule schedule, Keywords keywords, File file) {
 		this.file = file;
 		this.schedule = schedule;
-		//this.keywords = Keywords.instance();
+		this.keywords = keywords;
 	}
 
 	public void parse() {

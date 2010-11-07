@@ -11,7 +11,8 @@ import time.Time;
 public class FileSchedule implements Schedule {
 	
 	public FileSchedule(File schedule) {
-		new FileParser(this, schedule).parse();
+		// TODO: Fixies?
+		new FileParser(this, null, schedule).parse();
 	}
 	
 	public Iterable<Stop> getStops(Time start, Time end) {

@@ -28,7 +28,8 @@ public enum Day {
 	private static Set<Day>[][] dayRanges; 
 	
 	static {
-		dayRanges = new Set[7][7];
+		// Needs to be 8x8 because the days are 1-7 rather than 0-6
+		dayRanges = new Set[8][8];
 		for(Day begin : new DayRange(SUNDAY, SATURDAY)) {
 			EnumSet<Day> days = EnumSet.of(begin);
 			for(Day end : new DayRange(begin, begin.add(-1))) {
@@ -44,8 +45,7 @@ public enum Day {
 	 *  e.g. daysBetween(MONDAY, FRIDAY) would contain the usual weekdays.
 	 */
 	public static Set<Day> daysBetween(Day begin, Day end) {
-		return null;
-		//return dayRanges[begin.day][end.day];
+		return dayRanges[begin.day][end.day];
 	}
 	
 	/**
@@ -105,7 +105,8 @@ public enum Day {
 		return valueOf(MathUtils.mod(day + days - 1, 7) + 1);
 	}
 	
-	private static class DayRange implements Iterable<Day>, Iterator<Day> {
+	/** Iterates over the specified range of days (minimally one, if start == end). The follows the usual week ordering. */
+	protected static class DayRange implements Iterable<Day>, Iterator<Day> {
 
 		private Day current;
 		private Day end;
@@ -122,7 +123,7 @@ public enum Day {
 		}
 
 		public boolean hasNext() {
-			return finished;
+			return !finished;
 		}
 
 		public Day next() {

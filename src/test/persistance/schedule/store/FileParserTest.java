@@ -34,8 +34,8 @@ public class FileParserTest {
 			// reading.
 		}
 		// As long as we don't call parseFile, this is fine.
-		parser = new FileParser(schedule, new File(""));
-		//keywords = Keywords.instance();
+		keywords = new Keywords();
+		parser = new FileParser(schedule, keywords, new File(""));
 	}
 
 	@Test

@@ -92,6 +92,7 @@ public class TimeTest {
 
 	@Test
 	public void testCompare() {
+		// TODO: Rework this
 		time = new Time(SUNDAY, 0, 01);
 		Time t1 = new Time(SATURDAY, 0, 00);
 		assertTrue(time.compareTo(t1) < 0 && t1.compareTo(time) > 0);
