@@ -1,5 +1,6 @@
 package core;
 
+import java.util.Properties;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -15,6 +16,13 @@ public abstract class MessageHandler {
 
 	protected MessageHandler() {
 		this.keywords = new Keywords();
+	}
+	
+	/**
+	 * Initializes this MessageHandler with the given properties.
+	 */
+	public void intialize(Properties props) {
+		// Nothing by default
 	}
 
 	/**

@@ -1,8 +1,5 @@
 package time;
 
-import java.util.Iterator;
-import java.util.NoSuchElementException;
-
 /**
  * An immutable range representing the slice of time between the beginning and
  * the end.

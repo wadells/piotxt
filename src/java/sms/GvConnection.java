@@ -120,7 +120,7 @@ public class GvConnection implements SmsConnection {
 
 	// a simple test that prints all pending queries to the console
 	public static void main(String[] args) throws IOException {
-		Properties props = load(PROPERTY_FILE);
+		Properties props = load(PROPERTY_FILE, SECURE_PROPERTY_FILE);
 		GvConnection connection = new GvConnection(
 				props.getProperty("gv_user"), props.getProperty("gv_pass"));
 		connection.connect();
