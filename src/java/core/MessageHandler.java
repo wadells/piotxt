@@ -9,23 +9,13 @@ public abstract class MessageHandler {
 	/** The keywords this message handler uses. */
 	protected Keywords keywords;
 
-	protected MessageHandler(Keywords keywords) {
-		this.keywords = keywords;
-	}
-
 	/** The format of all dates in the headers of text messages */
 	public static final SimpleDateFormat STD_DATE_FORM = new SimpleDateFormat(
 			"EEE, MMM d, hh:mm aaa");
 
-	/**
-	 * Generates the appropriate response to a query. The implementation is left
-	 * to subclasses.
-	 * 
-	 * @param query
-	 *            the request
-	 * @return a string with the requested information
-	 */
-	public abstract String getResponse(Query query);
+	protected MessageHandler() {
+		this.keywords = new Keywords();
+	}
 
 	/**
 	 * The default message this handler generates for an unrecognized keyword,
@@ -35,6 +25,19 @@ public abstract class MessageHandler {
 	 * @return
 	 */
 	public abstract String defaultMessage(Date time);
+
+	/**
+	 * Generates the appropriate response to a query. The implementation is left
+	 * to subclasses.
+	 * <p>
+	 * The method identifyKeyword(Query q) should be called to assign a keyword
+	 * to the query, otherwise it may be parsed as a null query.
+	 * 
+	 * @param query
+	 *            the request
+	 * @return a string with the requested information
+	 */
+	public abstract String getResponse(Query query);
 
 	/**
 	 * This is a "helper" method for generating a message in response to the
@@ -49,6 +52,20 @@ public abstract class MessageHandler {
 					+ keywords.getDefinition(k);
 		}
 		return response;
+	}
+
+	/**
+	 * Identifies the keyword in a query based on the keywords this message
+	 * handler recognizes.
+	 * <p>
+	 * This method alters the state of the Query object.
+	 * 
+	 * @param query
+	 *            the query to be tagged
+	 */
+	public void identifyKeyword(Query query) {
+		String word = keywords.extract(query.getBody());
+		query.setKeyword(word);
 	}
 
 	/**

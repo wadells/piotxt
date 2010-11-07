@@ -9,5 +9,5 @@ public class TableHandlerTest extends MessageHandlerTest {
 	public void setUp() {
 		handler = new TableHandler();
 	}
-	
+
 }

@@ -6,9 +6,7 @@ import java.util.TreeMap;
 
 /**
  * The different keywords the system recognizes. Each keyword needs a brief
- * definition to be used when the built-in "help" keyword is queried. This class
- * follows the Singleton pattern and and duplicates some
- * Collection&lt;String&gt; functionality.
+ * definition to be used when the built-in "help" keyword is queried.
  *<p>
  * Example keywords could be:
  * 
@@ -23,19 +21,16 @@ public class Keywords {
 
 	/** The keyword, definition map that everything is stored in. */
 	private final Map<String, String> words;
-	
-	/** The global instance. */
-	private static Keywords instance;
-	
+
 	/** Preset keywords */
 	public static final String KEY_HELP = "help", KEY_ALL = "hour";
-	
+
 	protected Keywords() {
 		words = new TreeMap<String, String>();
 		words.put(KEY_HELP, "how to use the service");
 		words.put(KEY_ALL, "all stops in the next hour");
 	}
-	
+
 	/**
 	 * Add a keyword to the global list.
 	 * 
@@ -83,7 +78,7 @@ public class Keywords {
 	}
 
 	/**
-	 * Returns the definiton associated with the keyword or null if the keyword
+	 * Returns the definition associated with the keyword or null if the keyword
 	 * is not one recognized by the system
 	 * 
 	 * @param keyword
@@ -98,10 +93,4 @@ public class Keywords {
 		return words.keySet();
 	}
 
-	public static Keywords instance() {
-		if (instance == null) {
-			instance = new Keywords();
-		}
-		return instance;
-	}
 }

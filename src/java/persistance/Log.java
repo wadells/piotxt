@@ -15,7 +15,7 @@ import core.Query;
  * log file format is:
  * 
  * <pre>
- * [date] [processing time] phonehash {keyword} "flattened text of message"
+ * [MM/dd/yyyy@hh:mm:ss] [processing time] phonehash {keyword} "flattened text of message"
  * </pre>
  */
 public class Log {
@@ -76,7 +76,7 @@ public class Log {
 	 * @param q the query to be flattened into a single log entry
 	 * @return the string representing the query
 	 */
-	static String queryToString(Query q) {
+	public static String queryToString(Query q) {
 		String date = LOG_DATE_FORM.format(q.getTimeReceived());
 		String time;
 		if (q.getTimeResponded() == null) {

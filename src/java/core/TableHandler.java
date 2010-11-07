@@ -7,7 +7,6 @@ import static core.Keywords.*;
 public class TableHandler extends MessageHandler {
 
 	protected TableHandler() {
-		super(Keywords.instance());
 	}
 
 	@Override

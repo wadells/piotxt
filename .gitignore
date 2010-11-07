@@ -3,3 +3,9 @@
 .classpath
 .project
 bin/
+
+# sensitive setup information
+resources/pio_text.properties
+
+# generated log files
+log/*
