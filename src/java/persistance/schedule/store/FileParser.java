@@ -47,7 +47,7 @@ public class FileParser {
 	public FileParser(FileSchedule schedule, File file) {
 		this.file = file;
 		this.schedule = schedule;
-		this.keywords = Keywords.instance();
+		//this.keywords = Keywords.instance();
 	}
 
 	public void parse() {

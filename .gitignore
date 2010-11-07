@@ -5,7 +5,7 @@
 bin/
 
 # sensitive setup information
-resources/pio_text.properties
+resources/secure.properties
 
 # generated log files
 log/*
