@@ -28,6 +28,10 @@ public class PioText {
 	public final static File PROPERTY_FILE = new File(
 			"resources/pio_text.properties");
 
+	/** The file where sensitive information is stored. */
+	public final static File SECURE_PROPERTY_FILE = new File(
+	"resources/secure.properties");
+
 	/** How often PioText will check for new messages. */
 	final static long CHECK_FREQ = 60000;
 
@@ -58,16 +62,24 @@ public class PioText {
 		String gvUsername = props.getProperty("gv_user");
 		String gvPassword = props.getProperty("gv_pass");
 		connection = new GvConnection(gvUsername, gvPassword);
-		handler = new TestHandler();
+		
+		try {
+			handler = (MessageHandler) Class.forName(props.getProperty("message_handler")).newInstance();
+		} catch (Exception e) {
+			System.err.println("Error loading the message handler. Make sure the class name is correct.");
+			e.printStackTrace();
+			System.exit(1);
+		}
+		handler.intialize(props);
 	}
 
 	public static void main(String[] args) {
 		// load properties
 		Properties props = null;
 		try {
-			props = load(PROPERTY_FILE);
+			props = load(PROPERTY_FILE, SECURE_PROPERTY_FILE);
 		} catch (IOException e) {
-			System.out.println("Could load properties at " + PROPERTY_FILE
+			System.err.println("Could load properties at " + PROPERTY_FILE
 					+ ".  Exiting...");
 			e.printStackTrace();
 			System.exit(1);
@@ -97,12 +109,14 @@ public class PioText {
 	 * @return Properties
 	 * @throws IOException
 	 */
-	public static Properties load(File propsFile) throws IOException {
+	public static Properties load(File propsFile, File securePropsFile) throws IOException {
 		Properties result = null;
-		InputStream in = new FileInputStream(propsFile);
-		if (in != null) {
+		InputStream propStream = new FileInputStream(propsFile);
+		InputStream securePropStream = new FileInputStream(securePropsFile);
+		if (propStream != null && securePropStream != null) {
 			result = new Properties();
-			result.load(in); // Can throw IOException
+			result.load(propStream); // Can throw IOException
+			result.load(securePropStream);
 		}
 		return result;
 	}
