@@ -64,14 +64,15 @@ public abstract class MessageHandler {
 
 	/**
 	 * Identifies the keyword in a query based on the keywords this message
-	 * handler recognizes.
+	 * handler recognizes. This must be called for a query to have a Keyword.
+	 * Otherwise, it will have a null keyword.
 	 * <p>
 	 * This method alters the state of the Query object.
 	 * 
 	 * @param query
 	 *            the query to be tagged
 	 */
-	public void identifyKeyword(Query query) {
+	protected void identifyKeyword(Query query) {
 		String word = keywords.extract(query.getBody());
 		query.setKeyword(word);
 	}
@@ -93,7 +94,7 @@ public abstract class MessageHandler {
 	 * @return the header of the message.
 	 */
 	public static String getHeader(Date time) {
-		String header = "TXT4RAZ\n";
+		String header = "PioTxt\n";
 		String timeString = STD_DATE_FORM.format(time);
 		header += timeString + "\n";
 		return header;

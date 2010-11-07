@@ -18,7 +18,7 @@ public class LogTest {
 
 	// constants
 	private final Date then = new Date();
-	private final String phone = "123-456-7890";
+	private final String phone = "+15551118888";
 	private static final File testFile = new File("test.log");
 
 	private Log log;
@@ -47,6 +47,7 @@ public class LogTest {
 	public void testFormat() {
 		Query q = new Query(then, "hour", phone);
 		q.setTimeResponded(now);
+		q.setKeyword("hour");
 		String format = Log.queryToString(q);
 		assertTrue(format.charAt(0) == '[');
 		assertTrue(format.charAt(20) == ']');
@@ -65,7 +66,6 @@ public class LogTest {
 		assertEquals(then.toString(), time.toString());
 		String keyword = pts[3].substring(1, pts[3].length() - 1);
 		assertTrue(keyword.equals("hour"));
-
 	}
 
 	@Test

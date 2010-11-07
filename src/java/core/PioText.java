@@ -156,7 +156,6 @@ public class PioText {
 	}
 
 	private void respondToQuery(Query query) {
-		handler.identifyKeyword(query);
 		String response = handler.getResponse(query);
 		try {
 			connection.sendSms(query.getPhoneNumber(), response);
