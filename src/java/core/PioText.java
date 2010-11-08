@@ -78,6 +78,20 @@ public class PioText {
 		return verbose;
 	}
 
+	/** Helper for printing strings in verbose mode. Acts like printf. */
+	private static void printv(String format, Object... args) {
+		if (!verbose)
+			return;
+		System.out.printf(format, args);
+	}
+
+	/** Helper for printing strings in verbose mode. Acts like println. */
+	private static void printlnv(String string) {
+		if (!verbose)
+			return;
+		System.out.println(string);
+	}
+
 	/**
 	 * Generates a reply to the query, sends the reply, deletes the query from
 	 * the server, and then logs the query. This can fail, and will throw an
@@ -98,9 +112,7 @@ public class PioText {
 
 	public void run() {
 		System.out.println("PioText is running...");
-		if (verbose) {
-			System.out.println("-----------------------------------");
-		}
+		printlnv("-----------------------------------");
 		HashSet<Query> processed = new HashSet<Query>();
 		List<? extends Query> queries;
 		boolean firstTime = true;
@@ -120,14 +132,13 @@ public class PioText {
 						}
 					}
 				}
-				if (verbose && (newQueries > 0 || firstTime)) {
+				if ((newQueries > 0 || firstTime)) {
 					// TODO: system log this with timestamp
-					System.out
-							.printf("%-20s", SYSOUT_FORMAT.format(new Date()));
+					printv("%-20s", SYSOUT_FORMAT.format(new Date()));
 					String plural = "queries.";
 					if (newQueries == 1)
 						plural = "query.";
-					System.out.printf("%2d new %-7s\n", newQueries, plural);
+					printv("%2d new %-7s\n", newQueries, plural);
 					firstTime = false;
 				}
 			} catch (ConnectionException e) {
@@ -189,8 +200,7 @@ public class PioText {
 		verbose = Boolean.parseBoolean(props.getProperty("verbose"));
 
 		// Random sillyness
-		if (verbose)
-			System.out.printf("%-30sDone.\n", "Corralling enough bits...");
+		printv("%-30sDone.\n", "Corralling enough bits...");
 
 		// set up pio text
 		System.out.printf("%-30s", "Initializing PioText...");
@@ -207,7 +217,7 @@ public class PioText {
 
 		// Random sillyness
 		if (verbose)
-			System.out.printf("%-30sDone.\n\n", "Compacting widgets...");
+			printv("%-30sDone.\n\n", "Compacting widgets...");
 
 		// Run PioText
 		piotxt.run();
