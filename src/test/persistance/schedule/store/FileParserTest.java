@@ -21,20 +21,15 @@ import core.Keywords;
  */
 public class FileParserTest {
 
-	FileSchedule schedule;
+	MutableSchedule schedule;
 	FileParser parser;
 	Keywords keywords;
 
 	@Before
 	public void setup() {
-		try {
-			schedule = new FileSchedule(new File(""));
-		} catch (IllegalArgumentException e) {
-			// We're expecting it to not be able to open a blank file for
-			// reading.
-		}
-		// As long as we don't call parseFile, this is fine.
 		keywords = new Keywords();
+		schedule = new ListSchedule(keywords);
+		// As long as we don't call parseFile, this is fine.
 		parser = new FileParser(schedule, keywords, new File(""));
 	}
 
@@ -64,11 +59,6 @@ public class FileParserTest {
 	}
 
 	@Test
-	public void testAddStops() {
-		fail("Not yet implemented.");
-	}
-
-	@Test
 	public void testRequiresSchedule() {
 		// Add in a keyword for our stop
 		parser.parseLine("Stop, stop");
@@ -77,9 +67,21 @@ public class FileParserTest {
 		// Make a schedule, and try again
 		parser.parseLine("Schedule: Monday-Friday 7:00pm-9:00pm");
 		parser.parseLine("stop, 8:30pm");
+	}
+	
+
+	@Test
+	public void testAddStops() {
+		parser.parseLine("First Stop, stop1");
+		parser.parseLine("Second Stop, stop2");
+		parser.parseLine("Schedule: Monday-Friday 7:00pm-9:00pm");
+		parser.parseLine("stop1, 7:30pm");
+		parser.parseLine("stop2, 8:16pm");
 		
-		for(Day d : new Day[] { MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY } )
-			assertStopInSchedule(new Stop("Stop", "stop", new Time(d, 20, 30)));
+		for(Day d : new Day[] { MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY } ) {
+			assertStopInSchedule(new Stop("First Stop", "stop1", new Time(d, 19, 30)));
+			assertStopInSchedule(new Stop("Second Stop", "stop1", new Time(d, 20, 16)));
+		}
 	}
 	
 	@Test
@@ -102,12 +104,14 @@ public class FileParserTest {
 
 	@Test
 	public void testGracefulScheduleError() {
+		// parser.parseLine("Schedule:Monday\t-  Friday    7:00pm\t\t-9:00pm");
 		fail("Not yet implemented.");
 	}
 
 	@Test
 	public void testGracefulStopError() {
 		// TODO: Test case where a stop doesn't fit in the current schedule
+		// TODO: Test case where a stop's keyword is invalid/unknown
 		fail("Not yet implemented.");
 	}
 

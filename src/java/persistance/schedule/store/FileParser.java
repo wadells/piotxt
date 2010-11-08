@@ -1,10 +1,20 @@
 package persistance.schedule.store;
 
+import static java.util.regex.Pattern.compile;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Collection;
+import java.util.LinkedList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import time.Day;
+import time.Time;
+import time.TimeRange;
 
 import core.Keywords;
 
@@ -36,18 +46,19 @@ public class FileParser {
 
 	private File file;
 
-	private FileSchedule schedule;
+	private MutableSchedule schedule;
 	
-	private String currentSchedule = null;
+	private Collection<TimeRange> currentSchedule = null;
 
 	private Keywords keywords;
 
 	private long lineNumber;
 
-	public FileParser(FileSchedule schedule, Keywords keywords, File file) {
+	public FileParser(MutableSchedule schedule, Keywords keywords, File file) {
 		this.file = file;
 		this.schedule = schedule;
 		this.keywords = keywords;
+		this.currentSchedule = new LinkedList<TimeRange>();
 	}
 
 	public void parse() {
@@ -67,8 +78,7 @@ public class FileParser {
 					lineNumber++;
 					parseLine(line);
 				} catch (ParseException e) {
-					// TODO: Error logging?
-					// Log.error("Can has error logging? Caught an error, going to pretend like it didn't happen and continue.");
+					// TODO: Improved error logging.
 					// For now, just print the stack trace
 					e.printStackTrace();
 				}
@@ -87,8 +97,8 @@ public class FileParser {
 
 		if(tokens.length < 1)
 			throw new ParseException("Failed to parse any tokens from line '%s'.", "Encountered an unknown error.", lineNumber);
-//		else if(tokens[0].startsWith("Schedule: ")) 
-//			parseSchedule(tokens[0].substring(tokens[0].indexOf(':')));
+		else if(tokens[0].startsWith("Schedule:")) 
+			parseSchedule(tokens[0].substring(tokens[0].indexOf(':') + 1));
 		else if(isValidKeyword(tokens[0]) && keywords.contains(tokens[0]))
 			parseStops(tokens);
 		else
@@ -111,15 +121,45 @@ public class FileParser {
 		keywords.add(tokens[1], tokens[0]);
 	}
 
-	private void parseSchedule(String schedule) {
-		// Schedule: Monday-Friday 7:05am-11:00pm
-		// TODO: This
+	private void parseSchedule(String timeperiod) {
+		//  Monday-Friday 7:05am-11:00pm
+		Pattern dayPattern = compile("(\\w+)\\s*-\\s*(\\w+)");
+		Pattern timePattern = compile("(\\d{1,2}:\\d{2}(?:am|pm)*)\\s*-\\s*(\\d{1,2}:\\d{2}(?:am|pm)*)");
+		Matcher days = dayPattern.matcher(timeperiod);
+		Matcher times = timePattern.matcher(timeperiod);
+		
+		if(!days.find())
+			// TODO: graceful error
+			return;
+		
+		if(!times.find())
+			// TODO: graceful error
+			return;
+		
+		Day start = Day.findByName(days.group(1)), end = Day.findByName(days.group(2));
+		String startTime = times.group(1), endTime = times.group(2);
+		Collection<TimeRange> newSchedule = new LinkedList<TimeRange>();
+		
+		// TODO: Graceful error
+		for(Day d : Day.daysBetween(start, end)) {
+			newSchedule.add(new TimeRange(Time.parse(startTime, d), Time.parse(endTime, d)));
+		}
+		
+		// We wait to do this until now to preserve the previous schedule if we fail to properly parse this one.
+		currentSchedule.clear();
+		currentSchedule.addAll(newSchedule);
 	}
 
 	private void parseStops(String[] tokens) {
 		// square, 7:05, 8:05, 9:05, 10:05, 3:21, 4:18, 5:18, 6:29, 7:35, 8:36, 9:36, 10:35
-		if(currentSchedule == null)
+		if(currentSchedule.isEmpty())
 			throw new NoScheduleParseException("Attempted to parse stops without an enclosing schedule.");
-		// TODO: This
+		
+		String keyword = tokens[0];
+		// If our schedule starts in the PM, then start in the PM
+		boolean pm = currentSchedule.iterator().next().getBeginning().getHour() >= 12;
+		for (int i = 1; i < tokens.length; i++) {
+			// TODO: this still does nothing....
+		}
 	}
 }

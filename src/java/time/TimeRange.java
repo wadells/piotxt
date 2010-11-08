@@ -60,6 +60,15 @@ public class TimeRange {
 		return true;
 	}
 
+	public Time getBeginning() {
+		return begin;
+	}
+	
+	public Time getEnd() {
+		return begin;
+	}
+
+	// TODO: Delete the whole thing?
 //	/** Returns the slice of time that exists in both ranges. */
 //	public TimeRange intersect(TimeRange r) {
 //		TimeRange big, small;

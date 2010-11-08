@@ -6,7 +6,6 @@ import static java.lang.Boolean.parseBoolean;
 import java.io.File;
 import java.net.URISyntaxException;
 
-import persistance.schedule.store.FileSchedule;
 import persistance.schedule.store.MockSchedule;
 
 /** A manager class for controlling the schedule singleton. 
@@ -17,6 +16,8 @@ import persistance.schedule.store.MockSchedule;
  */
 public class ScheduleManager {
 
+	// TODO: This class is lined up for deletion.
+	
 	/** The property to decide whether to use the mock schedule */
 	public static final String MOCK_SCHEDULE_PROP = "mock.schedule";
 	
@@ -51,13 +52,14 @@ public class ScheduleManager {
 			// Otherwise, look for it somewhere the classloader can get at it
 			// i.e., if we're running from a JAR
 			try {
-				file = new File(FileSchedule.class.getResource(SCHEDULES_RESOURCE).toURI());
+				file = new File(ScheduleManager.class.getResource(SCHEDULES_RESOURCE).toURI());
 			} catch (URISyntaxException e) {
 				e.printStackTrace();
 				System.exit(1);
 			}
 		}
-		return new FileSchedule(file);
+		//return new FileSchedule(file);
+		return null;
 	}
 	
 }

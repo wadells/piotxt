@@ -5,6 +5,9 @@ import java.util.Calendar;
 
 import utils.MathUtils;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
  * A simple immutable time of a particular day.
  */
@@ -19,6 +22,27 @@ public class Time implements Comparable<Time> {
 	 */
 	public static Time now() {
 		return new Time(System.currentTimeMillis());
+	}
+	
+	/** The pattern used for parsing Times */
+	private static final Pattern TIME_PATTERN = Pattern.compile("(\\d{1,2}):(\\d{2})(pm)*");
+	
+	/** Parses a string like 7:00pm into a time on day d. */
+	public static Time parse(String s, Day d) {
+		Matcher m = TIME_PATTERN.matcher(s);
+		if(!m.matches())
+			throw TimeFormatException.forInputString(s);
+		
+		boolean pm = m.group(3) != null;
+		int hours = Integer.parseInt(m.group(1)) + (pm? 12 : 0);
+		int minutes = Integer.parseInt(m.group(2));
+
+		try {
+			return new Time(d, hours, minutes);
+		} catch(IllegalArgumentException e) {
+			// Something bad happened, let's blame it on the format.
+			throw TimeFormatException.forInputString(s);
+		}
 	}
 
 	/** Will be in the range [0, 23] */

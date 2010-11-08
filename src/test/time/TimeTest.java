@@ -12,6 +12,7 @@ import time.Time;
 import static java.util.Calendar.MINUTE;
 import static org.junit.Assert.*;
 import static time.Day.*;
+import static time.Time.parse;
 
 /**
  * Due to the size of the time space, even over this limited domain, many of
@@ -193,6 +194,28 @@ public class TimeTest {
 
 			assertTimeEqualToCalendar(String.format("Adding %d hours to %s, should be %s", h, new Time(start).toString(true, true), cal.getTime()), cal, time);
 		}
+		// TODO: Look into these.
+		/*java.lang.AssertionError: Adding -178 hours to Wed 18:05, should be Wed Mar 06 07:05:52 PST 149039 expected:<7> but was:<8>
+		at org.junit.Assert.fail(Assert.java:71)
+		at org.junit.Assert.failNotEquals(Assert.java:451)
+		at org.junit.Assert.assertEquals(Assert.java:99)
+		at time.TimeTest.assertTimeEqualToCalendar(TimeTest.java:36)
+		at time.TimeTest.testAddHours(TimeTest.java:195) */
+
+		/* java.lang.AssertionError: Adding -178 hours to Thu 12:25, should be Thu Mar 07 01:25:22 PST 149039 expected:<1> but was:<2>
+	at org.junit.Assert.fail(Assert.java:71)
+	at org.junit.Assert.failNotEquals(Assert.java:451)
+	at org.junit.Assert.assertEquals(Assert.java:99)
+	at time.TimeTest.assertTimeEqualToCalendar(TimeTest.java:36)
+	at time.TimeTest.testAddHours(TimeTest.java:195)*/
+		
+		/*java.lang.AssertionError: Adding -178 hours to Fri 15:46, should be Fri Mar 08 04:46:33 PST 149039 expected:<4> but was:<5>
+		at org.junit.Assert.fail(Assert.java:71)
+		at org.junit.Assert.failNotEquals(Assert.java:451)
+		at org.junit.Assert.assertEquals(Assert.java:99)
+		at time.TimeTest.assertTimeEqualToCalendar(TimeTest.java:36)
+		at time.TimeTest.testAddHours(TimeTest.java:195)
+		*/
 
 		// Test week wrap
 		cal.set(Calendar.DAY_OF_WEEK, Calendar.SATURDAY);
@@ -263,4 +286,29 @@ public class TimeTest {
 		assertTimeEqualToCalendar(cal, time);
 	}
 
+	@Test
+	public void testParse() {
+		Time time = new Time(SUNDAY, 22, 10); // 22:10
+		assertTrue(time.equalToTime(parse(time.toString(), SUNDAY)));
+		assertTrue(time.equalToTime(parse(time.toString(true), SUNDAY)));
+		
+		try {
+			parse("77:221am", SUNDAY);
+			fail("Did not throw expected exception.");
+		} catch(TimeFormatException e) {
+			// pass
+		}
+		try {
+			parse("06:21zz", SUNDAY);
+			fail("Did not throw expected exception.");
+		} catch(TimeFormatException e) {
+			// pass
+		}
+		try {
+			parse("22:07pm", SUNDAY);
+			fail("Did not throw expected exception.");
+		} catch(TimeFormatException e) {
+			// pass
+		}
+	}
 }
