@@ -64,42 +64,60 @@ public class GvConnection implements SmsConnection {
 	}
 
 	@Override
-	public List<Query> getNewMessages() throws SmsRecieveException {
+	public void deleteSms(Query query) throws ConnectionException {
+		if (query instanceof GvQuery) {
+			GvQuery gvq = (GvQuery) query;
+			try {
+				voice.deleteMessage(gvq.getGoogleID());
+			} catch (IOException e) {
+				throw new ConnectionException(
+						"Unable to delete sms though Google Voice.", e);
+			}
+		}
+
+	}
+
+	@Override
+	public List<GvQuery> getNewMessages() throws ConnectionException {
 		// retrieve from GV
 		String page = null;
 		try {
-			page = voice.getSMS();	
+			page = voice.getSMS();
 		} catch (IOException e) {
-			throw new SmsRecieveException(
+			throw new ConnectionException(
 					"Could retrieve sms from Google Voice.", e);
 		}
-		
+
 		// once retrieved, parse xml
-		List<Query> messages = null;
+		List<GvQuery> messages = null;
 		try {
 			messages = parse(page);
 		} catch (SAXException e) {
 			// can't parse the xml, then save it for analysis
-			String url = String.format("log/unparsable_%03d.xml", page.hashCode());
+			String url = String.format("log/unparsable_%03d.xml", page
+					.hashCode());
 			try {
 				utils.FileUtils.writeFile(url, page, true);
 			} catch (IOException ignored) {
 				// ideally this will never happen
 				ignored.printStackTrace();
 			}
-			throw new SmsRecieveException(
-					"Could not parse sms xml returned by Google Voice. Saving xml.", e);
+			throw new ConnectionException(
+					"Could not parse sms xml returned by Google Voice. Saving xml.",
+					e);
 		} catch (JSONException e) {
 			// can't parse the json, then save it for analysis
-			String url = String.format("log/unparsable_%03d.xml", page.hashCode());
+			String url = String.format("log/unparsable_%03d.xml", page
+					.hashCode());
 			try {
 				utils.FileUtils.writeFile(url, page, true);
 			} catch (IOException ignored) {
 				// ideally this will never happen
 				ignored.printStackTrace();
 			}
-			throw new SmsRecieveException(
-					"Could not parse json returned by Google Voice. Saving xml.", e);
+			throw new ConnectionException(
+					"Could not parse json returned by Google Voice. Saving xml.",
+					e);
 		}
 		return messages;
 	}
@@ -109,12 +127,13 @@ public class GvConnection implements SmsConnection {
 	}
 
 	@Override
-	public void sendSms(String number, String message) throws SmsSendException {
+	public void sendSms(String number, String message)
+			throws ConnectionException {
 		try {
 			voice.sendSMS(number, message);
 		} catch (IOException e) {
-			throw new SmsSendException(
-					"Unable to send sms though Google Voice", e);
+			throw new ConnectionException(
+					"Unable to send sms though Google Voice.", e);
 		}
 	}
 
@@ -129,7 +148,7 @@ public class GvConnection implements SmsConnection {
 		// utils.FileUtils.writeFile(filename + i + ".xml",
 		// connection.getRawSmsXml(), true);
 		// }
-		List<Query> list = connection.getNewMessages();
+		List<GvQuery> list = connection.getNewMessages();
 		System.out.println("\n" + list.size() + " new queries:");
 		for (Query q : list) {
 			System.out.println(persistance.Log.queryToString(q));

@@ -14,8 +14,6 @@ import static persistance.Log.*;
 import sms.ConnectionException;
 import sms.GvConnection;
 import sms.SmsConnection;
-import sms.SmsRecieveException;
-import sms.SmsSendException;
 
 /**
  * The main program manager. This is what should be run in a jar.
@@ -123,7 +121,7 @@ public class PioText {
 
 	public void run() {
 		HashSet<Query> processed = new HashSet<Query>();
-		List<Query> queries;
+		List<? extends Query> queries;
 		while (true) {
 			try {
 				queries = connection.getNewMessages();
@@ -138,7 +136,7 @@ public class PioText {
 				if (newQueries > 0) {
 					System.out.println(newQueries + " new queries.");
 				}
-			} catch (SmsRecieveException e) {
+			} catch (ConnectionException e) {
 				// TODO error log this
 				e.printStackTrace();
 			}
@@ -162,7 +160,7 @@ public class PioText {
 			query.setTimeResponded(new Date());
 			query.setResponse(response);
 			log(query);
-		} catch (SmsSendException e) {
+		} catch (ConnectionException e) {
 			// TODO error log this
 			e.printStackTrace();
 		}

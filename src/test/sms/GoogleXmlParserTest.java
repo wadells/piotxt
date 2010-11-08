@@ -27,7 +27,7 @@ public class GoogleXmlParserTest {
 				new Query(new Date(1288945197661l), "Square", "+15035555555") };
 
 		String xml = readFile(f);
-		List<Query> parsed = parse(xml);
+		List<? extends Query> parsed = parse(xml);
 		assertEqual(expected[0], parsed.get(0));
 		assertEqual(expected[1], parsed.get(1));
 

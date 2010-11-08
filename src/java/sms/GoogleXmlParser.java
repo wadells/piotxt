@@ -72,10 +72,11 @@ public class GoogleXmlParser {
 	 *            the xml containing the body of the message
 	 * @param json
 	 *            the json containing the metadata of the message
-	 * @return
+	 * @return a new google voice query
 	 * @throws JSONException
+	 *             if the json is unparseable
 	 */
-	private static Query buildQuery(String id, Element msg, JSONObject json)
+	private static GvQuery buildQuery(String id, Element msg, JSONObject json)
 			throws JSONException {
 		// the body is only avaliable through the xml
 		String body = getElementsWithAttributeValue(msg, "class",
@@ -84,7 +85,7 @@ public class GoogleXmlParser {
 		JSONObject message = json.getJSONObject("messages").getJSONObject(id);
 		String number = message.getString("phoneNumber");
 		Long time = message.getLong("startTime");
-		return new Query(new Date(time), body, number);
+		return new GvQuery(new Date(time), body, number, id);
 	}
 
 	/**
@@ -235,7 +236,7 @@ public class GoogleXmlParser {
 			String file = fileLocation + i + ".xml";
 			try {
 				String xml = readFile(file);
-				List<Query> list = parse(xml);
+				List<GvQuery> list = parse(xml);
 				System.out.println("\n" + list.size() + " new queries.");
 				for (Query q : list) {
 					System.out.println(Log.queryToString(q));
@@ -259,9 +260,9 @@ public class GoogleXmlParser {
 	 * @throws SAXException
 	 * @throws JSONException
 	 */
-	public static List<Query> parse(String xml) throws SAXException,
+	public static List<GvQuery> parse(String xml) throws SAXException,
 			JSONException {
-		List<Query> found = new ArrayList<Query>();
+		List<GvQuery> found = new ArrayList<GvQuery>();
 		Document dom = createDom(xml);
 		JSONObject json = extractJson(dom);
 		List<Element> conversations = extractConversations(dom);
@@ -276,7 +277,7 @@ public class GoogleXmlParser {
 			String from = extractFromField(lastmsg);
 			// If from someone else, process it
 			if (!from.equals("Me:")) {
-				Query query = buildQuery(id, lastmsg, json);
+				GvQuery query = buildQuery(id, lastmsg, json);
 				found.add(query);
 			}
 		}

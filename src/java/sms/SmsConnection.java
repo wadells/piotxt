@@ -16,10 +16,10 @@ public interface SmsConnection {
 	 * 
 	 * @return a list of queries
 	 * 
-	 * @throws SmsRecieveException
+	 * @throws ConnectionException
 	 *             if the connection is unable to retrieve or parse the sms
 	 */
-	public List<Query> getNewMessages() throws SmsRecieveException;
+	public List<? extends Query> getNewMessages() throws ConnectionException;
 
 	/**
 	 * Sends a single Sms from the connection to the number.
@@ -29,10 +29,11 @@ public interface SmsConnection {
 	 *            the destination of the Sms
 	 * @param message
 	 *            the body of the Sms
-	 * @throws SmsSendException
+	 * @throws ConnectionException
 	 *             if the connection is unable to send the Sms
 	 */
-	public void sendSms(String number, String message) throws SmsSendException;
+	public void sendSms(String number, String message)
+			throws ConnectionException;
 
 	/**
 	 * Connects to the service. This must be called before any other methods may
@@ -42,5 +43,16 @@ public interface SmsConnection {
 	 *             if unable to connect
 	 */
 	public void connect() throws ConnectionException;
+
+	/**
+	 * Deletes a query from the service. If it exists.
+	 * 
+	 * @param query
+	 *            the message to delete
+	 * 
+	 * @throws ConnectionException
+	 *             if unable to connect
+	 */
+	public void deleteSms(Query query) throws ConnectionException;
 
 }
