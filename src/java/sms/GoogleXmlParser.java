@@ -303,7 +303,7 @@ public class GoogleXmlParser {
 		// The following needs to be scrubbed because of url queries that java's
 		// parser interprets as entities. This is a non-greedy replace that
 		// should catch every url with an ampersand in it.
-		clean = clean.replaceAll("href=\"http://.*?&.*?\"", "");
+		clean = clean.replaceAll("href=[\"']http://.*?&.*?[\"']", "");
 		return clean;
 
 	}
