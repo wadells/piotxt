@@ -48,7 +48,7 @@ public class MessageLogTest {
 	 * Current log format:
 	 * 
 	 * <pre>
-	 * fonehash S[MM/dd/yyyy@hh:mm:ss] R[MM/dd/yyyy@hh:mm:ss] (systinfo) {keyword} "flattened text of message"
+	 * fonehash S[MM/dd/yy@hh:mm:ss] R[MM/dd/yy@hh:mm:ss] (systinfo) {keyword} "flattened text of message"
 	 * </pre>
 	 */
 	@Test
@@ -57,9 +57,9 @@ public class MessageLogTest {
 
 		// check whitespace
 		assertEquals(' ', test.charAt(8));
-		assertEquals(' ', test.charAt(31));
-		assertEquals(' ', test.charAt(54));
-		assertEquals(' ', test.charAt(65));
+		assertEquals(' ', test.charAt(29));
+		assertEquals(' ', test.charAt(50));
+		assertEquals(' ', test.charAt(61));
 
 		// split on leftmost quotations
 		String[] pts = test.split("\"", 2);
@@ -74,7 +74,7 @@ public class MessageLogTest {
 		assertEquals(8, parts[0].length());
 
 		// sent time
-		assertEquals(22, parts[1].length());
+		assertEquals(20, parts[1].length());
 		String sent = parts[1].substring(2, parts[1].length() - 1);
 		Date s = null;
 		try {
@@ -85,7 +85,7 @@ public class MessageLogTest {
 		 assertEquals(then.toString(), s.toString());
 
 		// responded time
-		assertEquals(22, parts[2].length());
+		assertEquals(20, parts[2].length());
 		String recieved = parts[2].substring(2, parts[2].length() - 1);
 		Date r = null;
 		try {

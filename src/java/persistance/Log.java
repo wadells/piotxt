@@ -15,7 +15,7 @@ import core.Query;
  * log file format is:
  * 
  * <pre>
- * fonehash S[MM/dd/yyyy@hh:mm:ss] R[MM/dd/yyyy@hh:mm:ss] (systinfo) {keyword} "flattened text of message"
+ * fonehash S[MM/dd/yy@hh:mm:ss] R[MM/dd/yy@hh:mm:ss] (systinfo) {keyword} "flattened text of message"
  * </pre>
  * 
  * For further discussion of log format check out the wiki entry at:
@@ -29,7 +29,7 @@ public class Log {
 	 * used for the messages.
 	 */
 	public static final SimpleDateFormat LOG_DATE_FORM = new SimpleDateFormat(
-			"MM/dd/yyyy@kk:mm:ss");
+			"MM/dd/yy@kk:mm:ss");
 
 	/** The file that this log saves to. */
 	public static final File LOG_FILE = new File("log/raz.log");
@@ -84,7 +84,8 @@ public class Log {
 		String phonehash = String.format("%08x", q.getPhoneNumber().hashCode());
 		String sent = LOG_DATE_FORM.format(q.getTimeSent());
 		String responded = LOG_DATE_FORM.format(q.getTimeResponded());
-		String sysinfo = "--------"; // TODO : put actuall system information here
+		String sysinfo = "--------"; // TODO : put actuall system information
+		// here
 		String keyword = q.getKeyword() == null ? "null" : q.getKeyword();
 		String body = flatten(q.getBody());
 		return String.format("%s S[%s] R[%s] (%s) {%s} \"%s\"", phonehash,
@@ -113,18 +114,19 @@ public class Log {
 	public void record(Query query) {
 		total++;
 		buffer.add(query);
-		if (total % 10 == 0) {
-			try {
-				save(buffer, file);
-				buffer.clear();
-			} catch (IOException e) {
-				// TODO: inform user
-				// for now do nothing but save again in another 10 messages
-			}
-			if (total % 500 == 0) {
-
-			}
+		// if (total % 10 == 0) { // save every time for now
+		try {
+			save(buffer, file);
+			buffer.clear();
+		} catch (IOException e) {
+			// TODO: inform user
+			e.printStackTrace();
+			// for now do nothing but save again in another 10 messages
 		}
+		if (total % 500 == 0) {
+			// TODO: backup
+		}
+		// }
 
 	}
 
@@ -159,12 +161,10 @@ public class Log {
 		Date then = new Date();
 		Thread.sleep(1000);
 		for (int i = 0; i < 20; i++) {
-			Query q = new Query(then, "help", Math.random() * Integer.MAX_VALUE
-					+ "");
+			Query q = new Query(then, "help", "15036666666");
 			q.setResponse("no");
 			q.setTimeResponded(new Date());
-			System.out.println(queryToString(q));
-			System.out.println(new Date().getTime());
+			log(q);
 		}
 	}
 }
