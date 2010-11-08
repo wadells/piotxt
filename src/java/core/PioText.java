@@ -28,7 +28,7 @@ public class PioText {
 
 	/** The file where sensitive information is stored. */
 	public final static File SECURE_PROPERTY_FILE = new File(
-	"resources/secure.properties");
+			"resources/secure.properties");
 
 	/** How often PioText will check for new messages. */
 	final static long CHECK_FREQ = 60000;
@@ -60,11 +60,13 @@ public class PioText {
 		String gvUsername = props.getProperty("gv_user");
 		String gvPassword = props.getProperty("gv_pass");
 		connection = new GvConnection(gvUsername, gvPassword);
-		
+
 		try {
-			handler = (MessageHandler) Class.forName(props.getProperty("message_handler")).newInstance();
+			handler = (MessageHandler) Class.forName(
+					props.getProperty("message_handler")).newInstance();
 		} catch (Exception e) {
-			System.err.println("Error loading the message handler. Make sure the class name is correct.");
+			System.err
+					.println("Error loading the message handler. Make sure the class name is correct.");
 			e.printStackTrace();
 			System.exit(1);
 		}
@@ -107,7 +109,8 @@ public class PioText {
 	 * @return Properties
 	 * @throws IOException
 	 */
-	public static Properties load(File propsFile, File securePropsFile) throws IOException {
+	public static Properties load(File propsFile, File securePropsFile)
+			throws IOException {
 		Properties result = null;
 		InputStream propStream = new FileInputStream(propsFile);
 		InputStream securePropStream = new FileInputStream(securePropsFile);
@@ -129,15 +132,21 @@ public class PioText {
 				for (Query q : queries) {
 					if (!processed.contains(q)) {
 						newQueries++;
-						respondToQuery(q);
-						processed.add(q);
+						try {
+							processQuery(q);
+							processed.add(q);
+						} catch (ConnectionException e) {
+							// TODO: retry/system log this
+							e.printStackTrace();
+						}
 					}
 				}
 				if (newQueries > 0) {
+					// TODO: system log this with timestamp
 					System.out.println(newQueries + " new queries.");
 				}
 			} catch (ConnectionException e) {
-				// TODO error log this
+				// TODO system log this
 				e.printStackTrace();
 			}
 			// sleep for a while before cheking again
@@ -153,17 +162,22 @@ public class PioText {
 		}
 	}
 
-	private void respondToQuery(Query query) {
+	/**
+	 * Generates a reply to the query, sends the reply, deletes the query from
+	 * the server, and then logs the query. This can fail, and will throw an
+	 * exception if it does.
+	 * 
+	 * @param query
+	 *            the query to be processed
+	 */
+	private void processQuery(Query query) throws ConnectionException {
 		String response = handler.getResponse(query);
-		try {
-			connection.sendSms(query.getPhoneNumber(), response);
-			query.setTimeResponded(new Date());
-			query.setResponse(response);
-			log(query);
-		} catch (ConnectionException e) {
-			// TODO error log this
-			e.printStackTrace();
-		}
+		connection.sendSms(query.getPhoneNumber(), response);
+		query.setTimeResponded(new Date());
+		query.setResponse(response);
+		connection.deleteSms(query);
+		log(query);
+
 	}
 
 	/** Initializes the sms connection. */
