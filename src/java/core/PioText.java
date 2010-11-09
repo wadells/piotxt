@@ -10,7 +10,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 
-import static persistance.Log.*;
+import persistance.Log;
 
 import sms.ConnectionException;
 import sms.GvConnection;
@@ -49,6 +49,9 @@ public class PioText {
 
 	/** The message handler that will process queries. */
 	private MessageHandler handler;
+	
+	/** The message log queries will be saved to. */
+	private Log messageLog;
 
 	/**
 	 * Creates a new PioText with the given properties.
@@ -69,6 +72,7 @@ public class PioText {
 			System.exit(1);
 		}
 		handler.intialize(props);
+		messageLog = new Log(props);
 	}
 
 	/** Initializes the sms connection. */
@@ -116,7 +120,7 @@ public class PioText {
 			connection.sendSms(query.getPhoneNumber(), response);
 			query.setTimeResponded(new Date());
 			query.setResponse(response);
-			log(query);
+			messageLog.record(query);
 			// TODO syslog sent responses
 		}
 		// TODO syslog old queries without sent responses
