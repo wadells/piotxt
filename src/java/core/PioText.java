@@ -24,7 +24,10 @@ public class PioText {
 	public final static String VERSION = "piotxt-v0.5";
 
 	/** How often PioText will check for new messages, in ms. */
-	final static long CHECK_FREQ = 60000;
+	private final static long CHECK_FREQ = 60000;
+
+	/** A half hour, in ms. */
+	private final static long HALF_HOUR = 1800000;
 
 	/** The file where setup information is stored. */
 	public final static File PROPERTY_FILE = new File(
@@ -78,6 +81,12 @@ public class PioText {
 		return verbose;
 	}
 
+	/** @return false if the query is more than a half hour old */
+	private boolean isNotOld(Query q) {
+		long diff = System.currentTimeMillis() - q.getTimeSent().getTime();
+		return diff < HALF_HOUR;
+	}
+
 	/** Helper for printing strings in verbose mode. Acts like printf. */
 	private static void printv(String format, Object... args) {
 		if (!verbose)
@@ -93,21 +102,24 @@ public class PioText {
 	}
 
 	/**
-	 * Generates a reply to the query, sends the reply, deletes the query from
-	 * the server, and then logs the query. This can fail, and will throw an
-	 * exception if it does.
+	 * If the query is within the last half hour, this will generate a and send
+	 * a reply, then log the query.
 	 * 
 	 * @param query
 	 *            the query to be processed
+	 * @throws ConnectionException
+	 *             if the message cannot be sent
 	 */
 	private void processQuery(Query query) throws ConnectionException {
-		String response = handler.getResponse(query);
-		connection.sendSms(query.getPhoneNumber(), response);
-		query.setTimeResponded(new Date());
-		query.setResponse(response);
-		connection.deleteSms(query);
-		log(query);
-
+		if (isNotOld(query)) {
+			String response = handler.getResponse(query);
+			connection.sendSms(query.getPhoneNumber(), response);
+			query.setTimeResponded(new Date());
+			query.setResponse(response);
+			log(query);
+			// TODO syslog sent responses
+		}
+		// TODO syslog old queries without sent responses
 	}
 
 	public void run() {
@@ -126,6 +138,8 @@ public class PioText {
 						try {
 							processQuery(q);
 							processed.add(q);
+							connection.deleteSms(q);
+							// TODO: syslog delete count
 						} catch (ConnectionException e) {
 							// TODO: retry/system log this
 							e.printStackTrace();
@@ -145,7 +159,7 @@ public class PioText {
 				// TODO system log this
 				e.printStackTrace();
 			}
-			// sleep for a while before cheking again
+			// sleep for a while before checking again
 			try {
 				Thread.sleep(CHECK_FREQ);
 			} catch (InterruptedException e) {
@@ -154,7 +168,6 @@ public class PioText {
 				e.printStackTrace();
 				System.exit(1);
 			}
-
 		}
 	}
 
