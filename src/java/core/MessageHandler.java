@@ -19,13 +19,6 @@ public abstract class MessageHandler {
 	}
 
 	/**
-	 * Initializes this MessageHandler with the given properties.
-	 */
-	public void intialize(Properties props) {
-		// Nothing by default
-	}
-
-	/**
 	 * The default message this handler generates for an unrecognized keyword,
 	 * no keyword at all, or other lookups.
 	 * 

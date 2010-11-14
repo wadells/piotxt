@@ -15,8 +15,12 @@ import core.Query;
  * log file format is:
  * 
  * <pre>
- * [MM/dd/yyyy@hh:mm:ss] [processing time] phonehash {keyword} "flattened text of message"
+ * fonehash S[MM/dd/yy@hh:mm:ss] R[MM/dd/yy@hh:mm:ss] (systinfo) {keyword} "flattened text of message"
  * </pre>
+ * 
+ * For further discussion of log format check out the wiki entry at:
+ * <p>
+ * http://github.com/javins/piotxt/wiki/Message-Logging-and-Statistics
  */
 public class Log {
 
@@ -25,9 +29,10 @@ public class Log {
 	 * used for the messages.
 	 */
 	public static final SimpleDateFormat LOG_DATE_FORM = new SimpleDateFormat(
-			"MM/dd/yyyy@kk:mm:ss");
+			"MM/dd/yy@kk:mm:ss");
 
-	public static final File LOG_FILE = new File("raz.log");
+	/** The file that this log saves to. */
+	public static final File LOG_FILE = new File("log/raz.log");
 
 	/** The total number of text messages processed by this instance of log. */
 	private int total;
@@ -62,36 +67,29 @@ public class Log {
 	}
 
 	/**
-	 * Returns a single line log format of a message.  This <em>is</em> lossy
-	 * because data about the phone number is hashed and the response to the
-	 * message is wiped.  All other data is recorded in a compact format though.
+	 * Returns a single line log format of a message. For example
 	 * <p>
-	 * The first three field should all be justified / equally spaced. The phone
+	 * The first four fields should all be justified / equally spaced. The phone
 	 * number is hashed because we want to know about user statistics, but
 	 * storing peoples phone number is just creepy. Currently it isn't a secure
 	 * hash, but that could be fixed if security becomes an issue.
 	 * 
 	 * @see {@link Log}
 	 * 
-	 * @param q the query to be flattened into a single log entry
+	 * @param q
+	 *            the query to be flattened into a single log entry
 	 * @return the string representing the query
 	 */
 	public static String queryToString(Query q) {
-		String date = LOG_DATE_FORM.format(q.getTimeReceived());
-		String time;
-		if (q.getTimeResponded() == null) {
-			time = "------";
-		} else {
-			long dt = q.getTimeResponded().getTime()
-					- q.getTimeReceived().getTime();
-			time = String.format("%06d", dt);
-		}
-		String keyword = q.getKeyword() == null ? "-" : q.getKeyword();
-
 		String phonehash = String.format("%08x", q.getPhoneNumber().hashCode());
-		String message = flatten(q.getBody());
-		return String.format("[%s] [%5s] %s {%s} \"%s\"", date, time,
-				phonehash, keyword, message);
+		String sent = LOG_DATE_FORM.format(q.getTimeSent());
+		String responded = LOG_DATE_FORM.format(q.getTimeResponded());
+		String sysinfo = "--------"; // TODO : put actuall system information
+		// here
+		String keyword = q.getKeyword() == null ? "null" : q.getKeyword();
+		String body = flatten(q.getBody());
+		return String.format("%s S[%s] R[%s] (%s) {%s} \"%s\"", phonehash,
+				sent, responded, sysinfo, keyword, body);
 	}
 
 	/**
@@ -106,28 +104,29 @@ public class Log {
 		return s.replaceAll("\\s+", " ").trim();
 	}
 
-
-	/** 
-	* Records a single query in this log and occasionally saves the log to its file.
-	*
-	* @param query
+	/**
+	 * Records a single query in this log and occasionally saves the log to its
+	 * file.
+	 * 
+	 * @param query
 	 *            the query to be logged
 	 */
 	public void record(Query query) {
 		total++;
 		buffer.add(query);
-		if (total % 10 == 0) {
-			try {
-				save(buffer, file);
-				buffer.clear();
-			} catch (IOException e) {
-				// TODO: inform user
-				// for now do nothing but save again in another 10 messages
-			}
-			if (total % 500 == 0) {
-
-			}
+		// if (total % 10 == 0) { // save every time for now
+		try {
+			save(buffer, file);
+			buffer.clear();
+		} catch (IOException e) {
+			// TODO: inform user
+			e.printStackTrace();
+			// for now do nothing but save again in another 10 messages
 		}
+		if (total % 500 == 0) {
+			// TODO: backup
+		}
+		// }
 
 	}
 
@@ -140,9 +139,12 @@ public class Log {
 	 * Saves a list of queries to a file. This appends the queries to the file
 	 * instead of overwriting.
 	 * 
-	 * @param queries a list of queries to be saved
-	 * @param file the file to append them to
-	 * @throws IOException if the file cannot be read
+	 * @param queries
+	 *            a list of queries to be saved
+	 * @param file
+	 *            the file to append them to
+	 * @throws IOException
+	 *             if the file cannot be read
 	 */
 	public static void save(List<Query> queries, File file) throws IOException {
 		boolean append = true;
@@ -159,11 +161,10 @@ public class Log {
 		Date then = new Date();
 		Thread.sleep(1000);
 		for (int i = 0; i < 20; i++) {
-			Query q = new Query(then, "help", Math.random() * Integer.MAX_VALUE
-					+ "");
+			Query q = new Query(then, "help", "15036666666");
 			q.setResponse("no");
-			// q.setTimeResponded(new Date());
-			System.out.println(queryToString(q));
+			q.setTimeResponded(new Date());
+			log(q);
 		}
 	}
 }
