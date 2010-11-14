@@ -138,7 +138,7 @@ public class FileParserTest {
 	}
 	
 	protected void assertStopInSchedule(Stop stop) {
-		Iterator<Stop> stops = schedule.getStops(new TimeRange(stop.getTime().addMinutes(-1), stop.getTime())).iterator(); 
+		Iterator<Stop> stops = schedule.getStops(new TimeRange(stop.getTime(), stop.getTime().addMinutes(1))).iterator(); 
 		assertTrue(stops.hasNext());
 		Stop next = stops.next();
 

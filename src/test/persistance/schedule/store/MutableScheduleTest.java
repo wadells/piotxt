@@ -70,7 +70,7 @@ public abstract class MutableScheduleTest {
 	@Test
 	public void testDirection() {
 		Stop si = new Stop("test", new Time(MONDAY, 12, 00), Direction.INBOUND);
-		Stop so = new Stop("test", new Time(MONDAY, 12, 00), Direction.OUTBOUND);
+		Stop so = new Stop("test", new Time(MONDAY, 12, 01), Direction.OUTBOUND);
 		
 		schedule.addStop(si);
 		assertTrue(schedule.stopInSchedule(si));
@@ -83,10 +83,14 @@ public abstract class MutableScheduleTest {
 	
 	@Test
 	public void testGetNextStop() {
+		assertNull(schedule.getNextStop("test", new Time(MONDAY, 00, 00)));
+		
 		for(Day d : Day.values()) {
 			schedule.addStop(new Stop("test", new Time(d, 12, 00)));
 			schedule.addStop(new Stop("wrong", new Time(d, 12, 02)));
 		}
+		assertNotNull(schedule.getNextStop("test", new Time(MONDAY, 00, 00)));
+		assertNull(schedule.getNextStop("notinthere", new Time(MONDAY, 00, 00)));
 		
 		for(Day d : Day.values()) {
 			assertTrue(schedule.stopInSchedule(new Stop("test", new Time(d, 12, 00))));
@@ -105,12 +109,15 @@ public abstract class MutableScheduleTest {
 	public void testGetNextStops() {
 		final int stops_per_day = 5;
 		
+		assertFalse(schedule.getNextStops("test", new Time(MONDAY, 00, 00), 10).iterator().hasNext());
 		for(Day d : Day.values()) {
 			schedule.addStop(new Stop("wrong", new Time(d, 11, 20)));
 			for (int i = 0; i < stops_per_day; i++) 
 				schedule.addStop(new Stop("test", new Time(d, 11, 30 + i)));
 			schedule.addStop(new Stop("wrong", new Time(d, 11, 40)));
 		}
+		assertTrue(schedule.getNextStops("test", new Time(MONDAY, 00, 00), 10).iterator().hasNext());
+		assertFalse(schedule.getNextStops("notinthere", new Time(MONDAY, 00, 00), 10).iterator().hasNext());
 		
 		for(Day d : Day.values()) {
 			Iterable<Stop> stops = schedule.getNextStops("test", new Time(d, 11, 00), stops_per_day);
@@ -141,6 +148,7 @@ public abstract class MutableScheduleTest {
 
 	@Test
 	public void testGetStops() {
+		assertFalse(schedule.getStops(new TimeRange(new Time(MONDAY, 00, 00), new Time(SUNDAY, 23, 59))).iterator().hasNext());
 		schedule.addStop(new Stop("test-m1", new Time(MONDAY, 11, 20)));
 		schedule.addStop(new Stop("test-m2", new Time(MONDAY, 11, 30)));
 		schedule.addStop(new Stop("test-m3", new Time(MONDAY, 23, 30)));
@@ -177,7 +185,7 @@ public abstract class MutableScheduleTest {
 		assertEquals("test-st1", s.getKeyword());
 		assertEquals(new Time(SATURDAY, 23, 30), s.getTime());
 		s = iter.next();
-		assertEquals("test-st1", s.getKeyword());
+		assertEquals("test-sn1", s.getKeyword());
 		assertEquals(new Time(SUNDAY, 1, 30), s.getTime());
 		assertFalse(iter.hasNext());	
 	}
