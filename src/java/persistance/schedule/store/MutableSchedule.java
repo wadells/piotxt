@@ -13,4 +13,6 @@ public interface MutableSchedule extends Schedule {
 	/** Removes all stops that are in the specified range. */
 	public void removeStops(TimeRange range);
 	
+	/** Convenience method for testing/package internal use. */
+	boolean stopInSchedule(Stop s);
 }

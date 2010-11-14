@@ -1,8 +1,8 @@
 package core;
 
-import java.util.Properties;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Properties;
 
 /** A service that generates responses to requests for raz scheduling info. */
 public abstract class MessageHandler {
@@ -16,6 +16,11 @@ public abstract class MessageHandler {
 
 	protected MessageHandler() {
 		this.keywords = new Keywords();
+	}
+	
+	/** Initializes this MessageHandler with the given properties. */
+	public void initialize(Properties props) {
+		// Do nothing here, yet.
 	}
 
 	/**

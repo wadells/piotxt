@@ -9,8 +9,8 @@ import static core.Keywords.*;
 public class TableHandler extends MessageHandler {
 
 	@Override
-	public void intialize(Properties props) {
-		super.intialize(props);
+	public void initialize(Properties props) {
+		super.initialize(props);
 
 		// TODO: Load in the schedule
 	}

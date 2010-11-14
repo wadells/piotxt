@@ -68,7 +68,7 @@ public class PioText {
 			e.printStackTrace();
 			System.exit(1);
 		}
-		handler.intialize(props);
+		handler.initialize(props);
 	}
 
 	/** Initializes the sms connection. */

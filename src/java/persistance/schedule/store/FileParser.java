@@ -146,8 +146,13 @@ public class FileParser {
 		}
 		
 		// We wait to do this until now to preserve the previous schedule if we fail to properly parse this one.
+		// TODO: Better to just clear out the schedule? We'll error out on every stop until the next schedule...
 		currentSchedule.clear();
 		currentSchedule.addAll(newSchedule);
+		
+		// Overwrite the previously existing schedule (if any) with this one.
+//		for(TimeRange r : currentSchedule)
+//			schedule.removeStops(r);
 	}
 
 	private void parseStops(String[] tokens) {

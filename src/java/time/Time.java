@@ -144,7 +144,7 @@ public class Time implements Comparable<Time> {
 	 * @throws UnsupportedOperationException
 	 *             if the times being compared fall on different days--since the
 	 *             week is a ring, those times are both "before" and "after"
-	 *             each other.
+	 *             each other. We ignore this fact within days to make certain operations easier.
 	 * 
 	 */
 	public int compareTo(Time o) {
@@ -153,6 +153,16 @@ public class Time implements Comparable<Time> {
 		}
 		int dh = hours - o.hours, dm = minutes - o.minutes;
 		return (dh == 0 ? dm : dh);
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		return (obj instanceof Time && equalToTime((Time) obj));
+	}
+	
+	@Override
+	public int hashCode() {
+		return day.hashCode() * 10000 + hours * 100 + minutes; 
 	}
 
 	public boolean equalToTime(Time t) {

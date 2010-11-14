@@ -49,6 +49,24 @@ public class Stop {
 	}
 	
 	@Override
+	public boolean equals(Object obj) {
+		return (obj instanceof Stop && isEqualToStop((Stop) obj));
+	}
+	
+	public boolean isEqualToStop(Stop s) {
+		return this.direction.equals(s.direction) && this.time.equals(s.time) && this.stopKeyword.equals(s.stopKeyword);
+	}
+	
+	@Override
+	public int hashCode() {
+		int hash = 1;
+		hash = hash * 31 + stopKeyword.hashCode();
+		hash = hash * 31 + time.hashCode();
+		hash = hash * 31 + direction.hashCode();
+		return hash;
+	}
+	
+	@Override
 	public String toString() {
 		return String.format("%s %s%s", stopKeyword, time, direction.getMarker());
 	}

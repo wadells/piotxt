@@ -12,6 +12,7 @@ import org.junit.*;
 import persistance.schedule.Stop;
 import time.Day;
 import time.Time;
+import time.TimeRange;
 
 import core.Keywords;
 
@@ -28,7 +29,7 @@ public class FileParserTest {
 	@Before
 	public void setup() {
 		keywords = new Keywords();
-		schedule = new ListSchedule(keywords);
+		schedule = new DefaultSchedule();
 		// As long as we don't call parseFile, this is fine.
 		parser = new FileParser(schedule, keywords, new File(""));
 	}
@@ -79,9 +80,14 @@ public class FileParserTest {
 		parser.parseLine("stop2, 8:16pm");
 		
 		for(Day d : new Day[] { MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY } ) {
-			assertStopInSchedule(new Stop("First Stop", "stop1", new Time(d, 19, 30)));
-			assertStopInSchedule(new Stop("Second Stop", "stop1", new Time(d, 20, 16)));
+			assertStopInSchedule(new Stop("stop1", new Time(d, 19, 30)));
+			assertStopInSchedule(new Stop("stop1", new Time(d, 20, 16)));
 		}
+	}
+	
+	@Test
+	public void testOvernightSchedule() {
+		fail("Not yet implemented.");
 	}
 	
 	@Test
@@ -132,10 +138,10 @@ public class FileParserTest {
 	}
 	
 	protected void assertStopInSchedule(Stop stop) {
-		Iterator<Stop> stops = schedule.getStops(stop.getTime(), stop.getTime()).iterator(); 
+		Iterator<Stop> stops = schedule.getStops(new TimeRange(stop.getTime().addMinutes(-1), stop.getTime())).iterator(); 
 		assertTrue(stops.hasNext());
 		Stop next = stops.next();
-		// We intentionally don't check the name
+
 		assertEquals(stop.getKeyword(), next.getKeyword());
 		assertEquals(stop.getDirection(), next.getDirection());
 		assertEquals(stop.getTime(), next.getTime());		
