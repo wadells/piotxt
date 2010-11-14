@@ -2,6 +2,7 @@ package time;
 
 import java.text.DateFormatSymbols;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.Random;
 
 import org.junit.Test;
@@ -13,6 +14,7 @@ import static java.util.Calendar.MINUTE;
 import static org.junit.Assert.*;
 import static time.Day.*;
 import static time.Time.parse;
+import static time.Time.timeFrom;
 
 /**
  * Due to the size of the time space, even over this limited domain, many of
@@ -192,9 +194,9 @@ public class TimeTest {
 
 			time = new Time(start).addHours(h);
 
-			assertTimeEqualToCalendar(String.format("Adding %d hours to %s, should be %s", h, new Time(start).toString(true, true), cal.getTime()), cal, time);
+			assertTimeEqualToCalendar(String.format("Adding %d hours to %s, should be %s (start was %d)", h, new Time(start).toString(true, true), cal.getTime(), start), cal, time);
 		}
-		// TODO: Look into these.
+		// TODO: Look into these. Bug in util.Calendar? 
 		/*java.lang.AssertionError: Adding -178 hours to Wed 18:05, should be Wed Mar 06 07:05:52 PST 149039 expected:<7> but was:<8>
 		at org.junit.Assert.fail(Assert.java:71)
 		at org.junit.Assert.failNotEquals(Assert.java:451)
@@ -310,5 +312,14 @@ public class TimeTest {
 		} catch(TimeFormatException e) {
 			// pass
 		}
+	}
+	
+	@Test
+	public void testTimeFromDate() {
+		long epoch = System.currentTimeMillis();
+		Time t = new Time(epoch);
+		Date d = new Date(epoch);
+		
+		assertTrue(t.equalToTime(timeFrom(d)));
 	}
 }

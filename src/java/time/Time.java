@@ -2,6 +2,7 @@ package time;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 
 import utils.MathUtils;
 
@@ -22,6 +23,16 @@ public class Time implements Comparable<Time> {
 	 */
 	public static Time now() {
 		return new Time(System.currentTimeMillis());
+	}
+	
+	/**
+	 * Returns the Time that d maps to. This method is locale-aware, like {@link Time.now()}.
+	 */
+	public static Time timeFrom(Date d) {
+		Calendar c = Calendar.getInstance();
+		c.setTime(d);
+
+		return new Time(Day.valueOf(c.get(Calendar.DAY_OF_WEEK)), c.get(Calendar.HOUR_OF_DAY), c.get(Calendar.MINUTE));
 	}
 	
 	/** The pattern used for parsing Times */

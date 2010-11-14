@@ -20,27 +20,20 @@ public class Stop {
 		}
 	}
 	
-	private final String stopName;
-	
 	private final String stopKeyword;
 	
 	private final Time time;
 	
 	private final Direction direction;
 
-	public Stop(String stopName, String stopKeyword, Time time) {
-		this(stopName, stopKeyword, time, Direction.NONE);
+	public Stop(String stopKeyword, Time time) {
+		this(stopKeyword, time, Direction.NONE);
 	}
 	
-	public Stop(String stopName, String stopKeyword, Time time, Direction direction) {
-		this.stopName = stopName;
+	public Stop(String stopKeyword, Time time, Direction direction) {
 		this.stopKeyword = stopKeyword;
 		this.time = time;
 		this.direction = direction;
-	}
-
-	public String getName() {
-		return stopName;
 	}
 
 	public String getKeyword() {
