@@ -10,7 +10,7 @@ public interface Schedule {
 	/** 
 	 * Returns a list of stops that occur in the time window from start to end. 
 	 * 
-	 * Returns no elements (i.e. an empty list) if no stops found. 
+	 * Returns no elements (for example, an empty list) if no stops found. 
 	 */
 	public abstract Iterable<Stop> getStops(TimeRange range);
 
@@ -24,7 +24,7 @@ public interface Schedule {
 	/**
 	 * Returns the number stops after t occurring at location with keyword locationKeyword.
 	 * 
-	 * Returns no elements (i.e. an empty list) if no stops found.
+	 * Returns no elements (for example, an empty list) if no stops found.
 	 */
 	public abstract Iterable<Stop> getNextStops(String locationKeyword,
 			Time t, int number);
