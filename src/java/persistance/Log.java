@@ -3,6 +3,9 @@ package persistance;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Properties;
@@ -23,6 +26,9 @@ import core.Query;
  */
 public class Log {
 
+	/** The default location the log will save to. */
+	public static final File DEFAULT_FILE = new File("piotxt_messages.log");
+
 	/**
 	 * The format log dates are stored in. More precise than the general format
 	 * used for the messages.
@@ -30,14 +36,25 @@ public class Log {
 	public static final SimpleDateFormat LOG_DATE_FORM = new SimpleDateFormat(
 			"MM/dd/yy@kk:mm:ss");
 
-	/** The default location the log will save to. */
-	public static final File DEFAULT_FILE = new File("piotxt_messages.log");
+	/** An algorithm for hashing phone numbers. */
+	private static MessageDigest sha;
+
+	/** The file this instance of log saves to. */
+	private final File logFile;
 
 	/** The total number of text messages processed by this instance of log. */
 	private int total;
 
-	/** The file this instance of log saves to. */
-	private final File logFile;
+	Log(File logFile) {
+		this.logFile = logFile;
+		try {
+			sha = MessageDigest.getInstance("SHA1");
+		} catch (NoSuchAlgorithmException e) {
+			// this shouldn't happen
+			e.printStackTrace();
+			System.exit(1);
+		}
+	}
 
 	public Log(Properties props) {
 		String url = props.getProperty("message_log_file");
@@ -49,48 +66,18 @@ public class Log {
 					+ DEFAULT_FILE.getPath() + ".");
 			logFile = DEFAULT_FILE;
 		}
+		try {
+			sha = MessageDigest.getInstance("SHA1");
+		} catch (NoSuchAlgorithmException e) {
+			// this shouldn't happen
+			e.printStackTrace();
+			System.exit(1);
+		}
 	}
 
-	Log(File logFile) {
-		this.logFile = logFile;
-	}
-
-	/**
-	 * Returns a single line log format of a message. For example
-	 * <p>
-	 * The first four fields should all be justified / equally spaced. The phone
-	 * number is hashed because we want to know about user statistics, but
-	 * storing peoples phone number is just creepy. Currently it isn't a secure
-	 * hash, but that could be fixed if security becomes an issue.
-	 * 
-	 * @see {@link Log}
-	 * 
-	 * @param q
-	 *            the query to be flattened into a single log entry
-	 * @return the string representing the query
-	 */
-	public static String queryToString(Query q) {
-		String phonehash = String.format("%08x", q.getPhoneNumber().hashCode());
-		String sent = LOG_DATE_FORM.format(q.getTimeSent());
-		String responded = LOG_DATE_FORM.format(q.getTimeResponded());
-		String sysinfo = "--------"; // TODO : put actuall system information
-		// here
-		String keyword = q.getKeyword() == null ? "null" : q.getKeyword();
-		String body = flatten(q.getBody());
-		return String.format("%s S[%s] R[%s] (%s) {%s} \"%s\"", phonehash,
-				sent, responded, sysinfo, keyword, body);
-	}
-
-	/**
-	 * Returns a version of the string stripped of all newlines, tabs and extra
-	 * whitespace.
-	 * 
-	 * @param s
-	 *            the string to flatten
-	 * @return a version of the string with all extra whitespace removed
-	 */
-	static String flatten(String s) {
-		return s.replaceAll("\\s+", " ").trim();
+	/** @return the total number of queries this log has recorded */
+	public int getTotal() {
+		return total;
 	}
 
 	/**
@@ -114,9 +101,70 @@ public class Log {
 		}
 	}
 
-	/** @return the total number of queries this log has recorded */
-	public int getTotal() {
-		return total;
+	/**
+	 * Returns a version of the string stripped of all newlines, tabs and extra
+	 * whitespace.
+	 * 
+	 * @param s
+	 *            the string to flatten
+	 * @return a version of the string with all extra whitespace removed
+	 */
+	static String flatten(String s) {
+		return s.replaceAll("\\s+", " ").trim();
+	}
+
+	/**
+	 * Generates a cryptographically secure eight digit hash of a phone number.
+	 * 
+	 * @param phoneNumber
+	 *            the phone number to be hashed
+	 * @return the eight digit truncated sha-1
+	 */
+	public static String generateID(String phoneNumber) {
+		sha.reset();
+		byte[] buffer = phoneNumber.getBytes();
+		sha.update(buffer);
+		byte[] hash = sha.digest();
+		String hex = new BigInteger(1, hash).toString(16);
+		return hex.substring(0, 8);
+	}
+
+	public static void main(String[] args) throws InterruptedException {
+		Date then = new Date();
+		Log log = new Log(new File("log/messages.log"));
+		Thread.sleep(1000);
+		for (int i = 0; i < 20; i++) {
+			Query q = new Query(then, "help", "15036666666");
+			q.setResponse("no");
+			q.setTimeResponded(new Date());
+			log.record(q);
+		}
+	}
+
+	/**
+	 * Returns a single line log format of a message. For example
+	 * <p>
+	 * The first four fields should all be justified / equally spaced. The phone
+	 * number is hashed because we want to know about user statistics, but
+	 * storing peoples phone number is just creepy. Currently it isn't a secure
+	 * hash, but that could be fixed if security becomes an issue.
+	 * 
+	 * @see {@link Log}
+	 * 
+	 * @param q
+	 *            the query to be flattened into a single log entry
+	 * @return the string representing the query
+	 */
+	public static String queryToString(Query q) {
+		String phonehash = generateID(q.getPhoneNumber());
+		String sent = LOG_DATE_FORM.format(q.getTimeSent());
+		String responded = LOG_DATE_FORM.format(q.getTimeResponded());
+		String sysinfo = "--------"; // TODO : put actual system information
+		// here
+		String keyword = q.getKeyword() == null ? "null" : q.getKeyword();
+		String body = flatten(q.getBody());
+		return String.format("%s S[%s] R[%s] (%s) {%s} \"%s\"", phonehash,
+				sent, responded, sysinfo, keyword, body);
 	}
 
 	/**
@@ -137,17 +185,5 @@ public class Log {
 				+ System.getProperty("line.separator"));
 		writer.flush();
 		writer.close();
-	}
-
-	public static void main(String[] args) throws InterruptedException {
-		Date then = new Date();
-		Log log = new Log(new File("log/messages.log"));
-		Thread.sleep(1000);
-		for (int i = 0; i < 20; i++) {
-			Query q = new Query(then, "help", "15036666666");
-			q.setResponse("no");
-			q.setTimeResponded(new Date());
-			log.record(q);
-		}
 	}
 }
