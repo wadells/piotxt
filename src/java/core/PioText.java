@@ -40,6 +40,9 @@ public class PioText {
 	/** The format for printing dates when running in verbose mode */
 	public final static SimpleDateFormat SYSOUT_FORMAT = new SimpleDateFormat(
 			"MM/d h:mm a");
+	
+	/** The maximum length of a text message */
+	public final static int SMS_LENGTH = 160;
 
 	/** Whether or not PioText should output basic data to the console. */
 	private static boolean verbose;

@@ -22,13 +22,8 @@ public class Keywords {
 	/** The keyword, definition map that everything is stored in. */
 	private final Map<String, String> words;
 
-	/** Preset keywords */
-	public static final String KEY_HELP = "help", KEY_ALL = "hour";
-
 	public Keywords() {
 		words = new TreeMap<String, String>();
-		words.put(KEY_HELP, "how to use the service");
-		words.put(KEY_ALL, "all stops in the next hour");
 	}
 
 	/**

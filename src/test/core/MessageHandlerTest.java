@@ -8,12 +8,12 @@ import static core.MessageHandler.STD_DATE_FORM;
 public abstract class MessageHandlerTest {
 
 	protected MessageHandler handler;
+	
+	protected Keywords keywords;
 
 	protected final Date time = new Date();
 
 	protected final String timeString = STD_DATE_FORM.format(time);
-
-	protected final Keywords keywords = new Keywords();
 
 	protected final String phone = "123-456-7890";
 

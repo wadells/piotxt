@@ -12,18 +12,16 @@ public class TestHandler extends MessageHandler {
 
 	@Override
 	public String defaultMessage(Date time) {
-		return "This message is a test default response.";
+		String response = getHeader(time);
+		response += "\nTest Handler\nThis is a default response.";
+		return response;
 	}
 
 	@Override
-	public String getResponse(Query query) {
-		if (query.getKeyword() != null) {
-			if (query.getKeyword().equals(Keywords.KEY_HELP)) {
-				return helpMessage(new Date());
-			}
-			return "Keyword recognized: " + query.getKeyword();
-		}
-		return defaultMessage(query.getTimeReceived());
+	public String getHandlerResponse(Query query) {
+		String response = getHeader(query.getTimeReceived());
+		response += "\nTest Handler\nKeyword recognized: " + query.getKeyword();
+		return response;
 	}
 
 }
