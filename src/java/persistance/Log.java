@@ -4,9 +4,8 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
+import java.util.Properties;
 
 import core.Query;
 
@@ -31,39 +30,29 @@ public class Log {
 	public static final SimpleDateFormat LOG_DATE_FORM = new SimpleDateFormat(
 			"MM/dd/yy@kk:mm:ss");
 
-	/** The file that this log saves to. */
-	public static final File LOG_FILE = new File("log/raz.log");
+	/** The default location the log will save to. */
+	public static final File DEFAULT_FILE = new File("piotxt_messages.log");
 
 	/** The total number of text messages processed by this instance of log. */
 	private int total;
 
-	private ArrayList<Query> buffer;
-
 	/** The file this instance of log saves to. */
-	private final File file;
+	private final File logFile;
 
-	/** The singleton instance of log. */
-	private static Log instance;
-
-	public static final Log getInstance() {
-		if (instance == null) {
-			instance = new Log();
+	public Log(Properties props) {
+		String url = props.getProperty("message_log_file");
+		if (url != null) {
+			// TODO check to makesure url is valid/reachable before accepting
+			logFile = new File(url);
+		} else {
+			System.err.println("No message log file specified. Using "
+					+ DEFAULT_FILE.getPath() + ".");
+			logFile = DEFAULT_FILE;
 		}
-		return instance;
 	}
 
-	protected Log() {
-		this.file = LOG_FILE;
-		buffer = new ArrayList<Query>();
-	}
-
-	public Log(File file) {
-		this.file = file;
-		buffer = new ArrayList<Query>();
-	}
-
-	public static void log(Query query) {
-		getInstance().record(query);
+	Log(File logFile) {
+		this.logFile = logFile;
 	}
 
 	/**
@@ -113,11 +102,8 @@ public class Log {
 	 */
 	public void record(Query query) {
 		total++;
-		buffer.add(query);
-		// if (total % 10 == 0) { // save every time for now
 		try {
-			save(buffer, file);
-			buffer.clear();
+			save(query, logFile);
 		} catch (IOException e) {
 			// TODO: inform user
 			e.printStackTrace();
@@ -126,8 +112,6 @@ public class Log {
 		if (total % 500 == 0) {
 			// TODO: backup
 		}
-		// }
-
 	}
 
 	/** @return the total number of queries this log has recorded */
@@ -146,25 +130,24 @@ public class Log {
 	 * @throws IOException
 	 *             if the file cannot be read
 	 */
-	public static void save(List<Query> queries, File file) throws IOException {
+	public static void save(Query query, File file) throws IOException {
 		boolean append = true;
 		FileWriter writer = new FileWriter(file, append);
-		for (Query q : queries) {
-			writer.write(queryToString(q)
-					+ System.getProperty("line.separator"));
-		}
+		writer.write(queryToString(query)
+				+ System.getProperty("line.separator"));
 		writer.flush();
 		writer.close();
 	}
 
 	public static void main(String[] args) throws InterruptedException {
 		Date then = new Date();
+		Log log = new Log(new File("log/messages.log"));
 		Thread.sleep(1000);
 		for (int i = 0; i < 20; i++) {
 			Query q = new Query(then, "help", "15036666666");
 			q.setResponse("no");
 			q.setTimeResponded(new Date());
-			log(q);
+			log.record(q);
 		}
 	}
 }

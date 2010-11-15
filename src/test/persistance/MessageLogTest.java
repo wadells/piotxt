@@ -38,7 +38,6 @@ public class MessageLogTest {
 		String flattened = flatten(nasty);
 		String expected = "a b c d e f g";
 		assertEquals(expected, flattened);
-
 	}
 
 	/**
@@ -112,9 +111,10 @@ public class MessageLogTest {
 	public void testLog() {
 		int n = 9;
 		for (int i = 0; i < 9; i++) {
-			log.record(new Query(then, "help", phone));
+			log.record(query);
 		}
 		assertEquals(n, log.getTotal());
+		testFile.delete();
 	}
 
 	@Test
