@@ -1,17 +1,49 @@
 # We use line starting with a # as comments, because comments make humans happy
 # First, we define the stops
 # Format: Stop Name, Stop Keyword
-Pioneer Square, square
+Templeton, templeton
+Law School, law
+Burlingame Fred Meyer, fred
+SW 6th & Salmon, salmon
 
 # We can define different schedules based on the day/time.
 # Each schedule is assumed to last until the next "Schedule:" definition
 Schedule: Monday-Friday 7:05am-11:00pm
 
-# Schedules are comma delineated, and any am/pm is optional
+##############################
+# Weekday Schedule           #
+##############################
 # Format: Stop Keyword, Times at this stop...
-square, 7:05, 8:05, 9:05, 10:05, 3:21, 4:18, 5:18, 6:29, 7:35, 8:36, 9:36, 10:35
-# <other stops go here...>
+salmon,    7:05am,   8:05,   9:05,  10:05,            3:21pm,   4:18,  5:18,  6:29,     7:35,     8:36,   9:36,  10:35
+fred,                                                                                   7:52pm i, 8:53i,  9:53i, 10:52i
+law,       7:27am i, 8:27i,  9:27i, 10:27i,           3:41pm i, 4:37i, 5:43i, 6:53i,    8:00i,    9:01i, 10:01i
+templeton, 7:37am,   8:37,   9:37,  10:37,  2:57pm,   3:51,     4:47,  6:00,  7:04,     8:04,     9:06,  10:06,  11:00
+law,       7:43am o, 8:43o,  9:43o,         3:02pm o, 3:59o,    4:53o, 6:05o, 7:09o,    8:10o,    9:12o, 10:11o
+fred,                                                                         7:17pm o, 8:18o,    9:20o, 10:18o
 
+##############################
+# Friday Extended Hours      #
+##############################
 # If a schedule overlaps another already-defined schedule, we overwrite the old with the new
 Schedule: Friday 7:00pm-2:00am
-square, 7:32, 8:31, 9:30, 10:22, 11:14, 11:51, 12:28, 1:04, 1:42
+templeton: 7:04pm,   8:03,  9:02,   9:54,  10:46, 11:32, 12:09am, 12:46, 1:22, 2:00
+law,       7:08pm o, 8:07o, 9:06o,  9:58o, 10:50o
+fred,      7:16pm o, 8:15o, 9:14o, 10:06o, 10:58o
+salmon,    7:32pm,   8:31,  9:30,  10:22,  11:14, 11:51, 12:28am,  1:04, 1:42
+fred,      7:48pm i, 8:47i, 9:46i, 10:38i
+law,       7:56pm i, 8:55i
+
+
+
+
+##############################
+# Weekend Schedule           #
+##############################
+Schedule: Saturday-Sunday 7:50am-2:00am
+templeton, 7:50am,   8:45,   9:55,  10:50,  12:15pm,   1:10,  2:06,  3:03,  4:00,  4:57,  6:09,  7:06,  8:33,   9:29,  10:40,  11:35,     12:30am,  1:25, 2:00
+fred,      8:00am o, 8:55o, 10:05o, 11:00o, 12:25pm o, 1:20o, 2:16o, 3:13o, 4:10o, 5:07o, 6:19o, 7:16o, 8:43o,  9:39o, 10:50o, 11:45o,    12:40am o
+salmon,    8:18am,   9:13,  10:23,  11:18,  12:43pm,   1:39,  2:35,  3:32,  4:29,  5:26,  6:38,  7:35,  9:02,   9:58,  11:08,  12:03am,   12:58,    1:43
+fred,      8:35am i, 9:30i, 10:40i, 11:35i,  1:00pm i, 1:56i, 2:53i, 3:50i, 4:47i, 5:44i, 6:56i, 7:53i, 9:19i, 10:15i, 11:25i, 12:20am i,  1:15i
+
+Schedule: Sunday-Monday 12:00am-2:00am
+# no stops
