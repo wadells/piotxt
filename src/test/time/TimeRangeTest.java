@@ -64,6 +64,19 @@ public class TimeRangeTest {
 		assertFalse(r.isInRange(t2));
 	}
 	
+	// [Fri 07:00pm, Sat 02:00am)
+	@Test
+	public void testIsInRange2() {
+		Time t1 = new Time(FRIDAY, 19, 00);
+		Time t2 = new Time(SATURDAY, 2, 00);
+		
+		TimeRange r = new TimeRange(t1, t2);
+		assertFalse(r.isEmpty());
+		
+		// Test inclusion
+		assertTrue(r.isInRange(new Time(SATURDAY, 00, 17)));
+	}
+	
 	@Test
 	public void testIsInRangeSameDay() {
 		Time t1 = new Time(SATURDAY, 12, 00);

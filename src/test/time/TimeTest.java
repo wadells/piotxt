@@ -187,6 +187,8 @@ public class TimeTest {
 		// Promote seconds to hours so the test is less dependent on when it's
 		// run
 		long start = System.currentTimeMillis() * 3600;
+		// TODO: Why does it fail with the following start millis? Bug in util.Calendar? 
+//		long start = 4643201458904400l;
 
 		for (int h : toAdd) {
 			cal.setTimeInMillis(start);
@@ -196,29 +198,7 @@ public class TimeTest {
 
 			assertTimeEqualToCalendar(String.format("Adding %d hours to %s, should be %s (start was %d)", h, new Time(start).toString(true, true), cal.getTime(), start), cal, time);
 		}
-		// TODO: Look into these. Bug in util.Calendar? 
-		/*java.lang.AssertionError: Adding -178 hours to Wed 18:05, should be Wed Mar 06 07:05:52 PST 149039 expected:<7> but was:<8>
-		at org.junit.Assert.fail(Assert.java:71)
-		at org.junit.Assert.failNotEquals(Assert.java:451)
-		at org.junit.Assert.assertEquals(Assert.java:99)
-		at time.TimeTest.assertTimeEqualToCalendar(TimeTest.java:36)
-		at time.TimeTest.testAddHours(TimeTest.java:195) */
-
-		/* java.lang.AssertionError: Adding -178 hours to Thu 12:25, should be Thu Mar 07 01:25:22 PST 149039 expected:<1> but was:<2>
-	at org.junit.Assert.fail(Assert.java:71)
-	at org.junit.Assert.failNotEquals(Assert.java:451)
-	at org.junit.Assert.assertEquals(Assert.java:99)
-	at time.TimeTest.assertTimeEqualToCalendar(TimeTest.java:36)
-	at time.TimeTest.testAddHours(TimeTest.java:195)*/
 		
-		/*java.lang.AssertionError: Adding -178 hours to Fri 15:46, should be Fri Mar 08 04:46:33 PST 149039 expected:<4> but was:<5>
-		at org.junit.Assert.fail(Assert.java:71)
-		at org.junit.Assert.failNotEquals(Assert.java:451)
-		at org.junit.Assert.assertEquals(Assert.java:99)
-		at time.TimeTest.assertTimeEqualToCalendar(TimeTest.java:36)
-		at time.TimeTest.testAddHours(TimeTest.java:195)
-		*/
-
 		// Test week wrap
 		cal.set(Calendar.DAY_OF_WEEK, Calendar.SATURDAY);
 		cal.set(Calendar.HOUR_OF_DAY, 23);
@@ -293,21 +273,19 @@ public class TimeTest {
 		Time time = new Time(SUNDAY, 22, 10); // 22:10
 		assertTrue(time.equalToTime(parse(time.toString(), SUNDAY)));
 		assertTrue(time.equalToTime(parse(time.toString(true), SUNDAY)));
+
+		// Test "best efforts" to parse
+		assertEquals(new Time(SUNDAY, 12, 21), parse("12:21pm", SUNDAY));
+		assertEquals(new Time(SUNDAY, 6, 21), parse("06:21zz", SUNDAY));
+		assertEquals(new Time(SUNDAY, 6, 21), parse("06:21am adsfg", SUNDAY));
+		assertEquals(new Time(SUNDAY, 22, 21), parse("10:21  \t   pm", SUNDAY));
+		assertEquals(new Time(SUNDAY, 22, 07), parse("22:07pm", SUNDAY));
 		
+		assertEquals(new Time(SUNDAY, 00, 07), parse("12:07", SUNDAY));
+		
+		// Test failure
 		try {
 			parse("77:221am", SUNDAY);
-			fail("Did not throw expected exception.");
-		} catch(TimeFormatException e) {
-			// pass
-		}
-		try {
-			parse("06:21zz", SUNDAY);
-			fail("Did not throw expected exception.");
-		} catch(TimeFormatException e) {
-			// pass
-		}
-		try {
-			parse("22:07pm", SUNDAY);
 			fail("Did not throw expected exception.");
 		} catch(TimeFormatException e) {
 			// pass

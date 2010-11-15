@@ -36,16 +36,20 @@ public class Time implements Comparable<Time> {
 	}
 	
 	/** The pattern used for parsing Times */
-	private static final Pattern TIME_PATTERN = Pattern.compile("(\\d{1,2}):(\\d{2})(pm)*");
+	private static final Pattern TIME_PATTERN = Pattern.compile("(\\d{1,2}):(\\d{2})\\s*(pm)*");
 	
 	/** Parses a string like 7:00pm into a time on day d. */
 	public static Time parse(String s, Day d) {
 		Matcher m = TIME_PATTERN.matcher(s);
-		if(!m.matches())
+		if(!m.find())
 			throw TimeFormatException.forInputString(s);
 		
 		boolean pm = m.group(3) != null;
-		int hours = Integer.parseInt(m.group(1)) + (pm? 12 : 0);
+		int hours = Integer.parseInt(m.group(1));
+		if(pm && hours < 12)
+			hours += 12;
+		else if(!pm && hours == 12)
+			hours = 0; // Midnight
 		int minutes = Integer.parseInt(m.group(2));
 
 		try {
@@ -222,6 +226,8 @@ public class Time implements Comparable<Time> {
 			} else if (hr > 12) {
 				am = false;
 				hr -= 12;
+			} else if (hr == 12) {
+				am = false;
 			}
 			params.add(hr);
 			params.add(minutes);

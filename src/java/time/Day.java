@@ -74,7 +74,7 @@ public enum Day {
 				return d;
 			}
 		}
-		throw new IllegalArgumentException(String.format("'%d' does not map to a day of the week.", day));
+		throw new IllegalArgumentException(String.format("'%s' does not map to a day of the week.", day));
 	}
 
 	private final int day;

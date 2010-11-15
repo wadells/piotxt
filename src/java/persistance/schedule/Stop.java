@@ -68,6 +68,6 @@ public class Stop {
 	
 	@Override
 	public String toString() {
-		return String.format("%s %s%s", stopKeyword, time, direction.getMarker());
+		return String.format("%s %s %s", stopKeyword, time.toString(false, true), direction.getMarker());
 	}
 }

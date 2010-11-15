@@ -1,19 +1,29 @@
 package persistance.schedule.store;
 
 import static java.lang.String.format;
-import static org.junit.Assert.*;
-import static time.Day.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static persistance.schedule.Stop.Direction.INBOUND;
+import static persistance.schedule.Stop.Direction.OUTBOUND;
+import static time.Day.FRIDAY;
+import static time.Day.MONDAY;
+import static time.Day.SATURDAY;
+import static time.Day.THURSDAY;
+import static time.Day.TUESDAY;
+import static time.Day.WEDNESDAY;
 
 import java.io.File;
 import java.util.Iterator;
 
-import org.junit.*;
+import org.junit.Before;
+import org.junit.Test;
 
 import persistance.schedule.Stop;
 import time.Day;
 import time.Time;
 import time.TimeRange;
-
 import core.Keywords;
 
 /**
@@ -79,22 +89,86 @@ public class FileParserTest {
 		parser.parseLine("stop1, 7:30pm");
 		parser.parseLine("stop2, 8:16pm");
 		
-		for(Day d : new Day[] { MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY } ) {
+		for(Day d : new Day[] { MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY } ) {
 			assertStopInSchedule(new Stop("stop1", new Time(d, 19, 30)));
-			assertStopInSchedule(new Stop("stop1", new Time(d, 20, 16)));
+			assertStopInSchedule(new Stop("stop2", new Time(d, 20, 16)));
+		}
+	}
+	
+	@Test
+	public void testDirection() {
+		parser.parseLine("First Stop, stop1");
+		parser.parseLine("Second Stop, stop2");
+		parser.parseLine("Schedule: Monday-Friday 7:00pm-9:00pm");
+		parser.parseLine("stop1, 7:30pm o, 8:54pmo");
+		parser.parseLine("stop2, 8:16pm i");
+		
+		for(Day d : new Day[] { MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY } ) {
+			assertStopInSchedule(new Stop("stop1", new Time(d, 19, 30), OUTBOUND));
+			assertStopInSchedule(new Stop("stop2", new Time(d, 20, 16), INBOUND));
+			assertStopInSchedule(new Stop("stop1", new Time(d, 20, 54), OUTBOUND));
 		}
 	}
 	
 	@Test
 	public void testOvernightSchedule() {
-		fail("Not yet implemented.");
+		parser.parseLine("First Stop, stop1");
+		parser.parseLine("Second Stop, stop2");
+		parser.parseLine("Schedule: Friday-Saturday 7:00pm-2:00am");
+		parser.parseLine("stop1, 7:30pm, 11:59pm, 12:17, 1:59am");
+		parser.parseLine("stop2, 8:16pm, 23:44, 12:43am");
+		
+		for(Day d : new Day[] { FRIDAY, SATURDAY } ) {
+			assertStopInSchedule(new Stop("stop1", new Time(d, 19, 30)));
+			assertStopInSchedule(new Stop("stop1", new Time(d, 23, 59)));
+			assertStopInSchedule(new Stop("stop1", new Time(d.add(1), 00, 17)));
+			assertStopInSchedule(new Stop("stop1", new Time(d.add(1), 1, 59)));
+			assertStopInSchedule(new Stop("stop2", new Time(d, 20, 16)));
+			assertStopInSchedule(new Stop("stop2", new Time(d, 23, 44)));
+			assertStopInSchedule(new Stop("stop2", new Time(d.add(1), 00, 43)));
+		}
 	}
 	
 	@Test
 	public void testOverwritesStops() {
-		fail("Not yet implemented.");
+		parser.parseLine("First Stop, stop1");
+		parser.parseLine("Second Stop, stop2");
+		parser.parseLine("Schedule: Monday-Friday 7:00pm-9:00pm");
+		parser.parseLine("stop1, 7:30pm, 8:45pm");
+		parser.parseLine("stop2, 8:16pm");
+		parser.parseLine("Schedule: Friday 7:00pm-9:00pm");
+		parser.parseLine("stop1, 7:40pm");
+		parser.parseLine("stop2, 8:23pm");
+		
+		for(Day d : new Day[] { MONDAY, TUESDAY, WEDNESDAY, THURSDAY } ) {
+			assertStopInSchedule(new Stop("stop1", new Time(d, 19, 30)));
+			assertStopInSchedule(new Stop("stop1", new Time(d, 20, 45)));
+			assertStopInSchedule(new Stop("stop2", new Time(d, 20, 16)));
+		}
+		
+		assertEquals(new Stop("stop1", new Time(FRIDAY, 19, 40)), schedule.getNextStop("stop1", new Time(FRIDAY, 19, 00)));
+		assertEquals(new Stop("stop2", new Time(FRIDAY, 20, 23)), schedule.getNextStop("stop2", new Time(FRIDAY, 19, 00)));
+		// Ensure the 8:45 stop is gone
+		assertFalse(schedule.getStops(new TimeRange(new Time(FRIDAY, 20, 45), new Time(FRIDAY, 20, 46))).iterator().hasNext());		
 	}
 
+	@Test
+	public void testMagicAmPm() {
+		parser.parseLine("Stop, stop");
+		parser.parseLine("Schedule: Monday-Friday 7:00am-2:00am");
+		parser.parseLine("stop, 8:30, 12:01pm, 12:30, 7:00, 12:10, 12:50, 1:40");
+		
+		for(Day d : new Day[] { MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY } ) {
+			assertStopInSchedule(new Stop("stop", new Time(d, 8, 30)));
+			assertStopInSchedule(new Stop("stop", new Time(d, 12, 01)));
+			assertStopInSchedule(new Stop("stop", new Time(d, 12, 30)));
+			assertStopInSchedule(new Stop("stop", new Time(d, 19, 00)));
+			assertStopInSchedule(new Stop("stop", new Time(d.add(1), 00, 10)));
+			assertStopInSchedule(new Stop("stop", new Time(d.add(1), 00, 50)));
+			assertStopInSchedule(new Stop("stop", new Time(d.add(1), 01, 40)));
+		}
+	}
+	
 	@Test
 	public void testGracefulKeywordError() {
 		Class<? extends ParseException> simpleKeywordException = FileParser.KeywordParseException.class;
@@ -139,7 +213,7 @@ public class FileParserTest {
 	
 	protected void assertStopInSchedule(Stop stop) {
 		Iterator<Stop> stops = schedule.getStops(new TimeRange(stop.getTime(), stop.getTime().addMinutes(1))).iterator(); 
-		assertTrue(stops.hasNext());
+		assertTrue(format("Could not find stop '%s' in schedule.", stop), stops.hasNext());
 		Stop next = stops.next();
 
 		assertEquals(stop.getKeyword(), next.getKeyword());

@@ -65,31 +65,11 @@ public class TimeRange {
 	}
 	
 	public Time getEnd() {
-		return begin;
+		return end;
 	}
-
-	// TODO: Delete the whole thing?
-//	/** Returns the slice of time that exists in both ranges. */
-//	public TimeRange intersect(TimeRange r) {
-//		TimeRange big, small;
-//		
-//		// Null intersection?
-//		if(!((r.isInRange(begin) || r.isInRange(end)) || 
-//				(isInRange(r.begin) || isInRange(r.end))))
-//			return emptyRange();
-//		
-//		return null;
-//	}
-//	
-//	/** The "size" of this time range; essentially how much time it encompasses. */
-//	private int size() {
-//		return daysBetween(begin.getDay(), end.getDay()).size() * 24 * 60 
-//			+ (end.getHour() - begin.getHour()) * 60
-//			+ (end.getMinute() - begin.getMinute());
-//	}
-//
-//	/** Tests whether the intersection of this time range with r is nonzero. */
-//	public boolean doesIntersect(TimeRange r) {
-//		return !intersect(r).isEmpty();
-//	}
+	
+	@Override
+	public String toString() {
+		return String.format("[%s, %s)", begin.toString(false, true), end.toString(false, true));
+	}
 }

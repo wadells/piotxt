@@ -1,6 +1,9 @@
 package persistance.schedule.store;
 
 import static java.util.regex.Pattern.compile;
+import static persistance.schedule.Stop.Direction.INBOUND;
+import static persistance.schedule.Stop.Direction.NONE;
+import static persistance.schedule.Stop.Direction.OUTBOUND;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -11,6 +14,9 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import persistance.schedule.Stop;
+import persistance.schedule.Stop.Direction;
 
 import time.Day;
 import time.Time;
@@ -123,7 +129,7 @@ public class FileParser {
 
 	private void parseSchedule(String timeperiod) {
 		//  Monday-Friday 7:05am-11:00pm
-		Pattern dayPattern = compile("(\\w+)\\s*-\\s*(\\w+)");
+		Pattern dayPattern = compile("(\\w+)\\s*(?:-\\s*(\\w+))?");
 		Pattern timePattern = compile("(\\d{1,2}:\\d{2}(?:am|pm)*)\\s*-\\s*(\\d{1,2}:\\d{2}(?:am|pm)*)");
 		Matcher days = dayPattern.matcher(timeperiod);
 		Matcher times = timePattern.matcher(timeperiod);
@@ -136,13 +142,23 @@ public class FileParser {
 			// TODO: graceful error
 			return;
 		
-		Day start = Day.findByName(days.group(1)), end = Day.findByName(days.group(2));
+		Day start, end;
+		if(days.group(2) == null)  {
+			// Start and end are the same
+			start = end = Day.findByName(days.group(1));
+		} else {
+			start = Day.findByName(days.group(1));
+			end = Day.findByName(days.group(2));
+		}		
 		String startTime = times.group(1), endTime = times.group(2);
 		Collection<TimeRange> newSchedule = new LinkedList<TimeRange>();
 		
 		// TODO: Graceful error
 		for(Day d : Day.daysBetween(start, end)) {
-			newSchedule.add(new TimeRange(Time.parse(startTime, d), Time.parse(endTime, d)));
+			Time s = Time.parse(startTime, d), e = Time.parse(endTime, d);
+			if(e.compareTo(s) < 0)
+				e = e.addDays(1); // Assume we're looking at an overnight schedule (e.g. 7:00pm-2:00am)
+			newSchedule.add(new TimeRange(s, e));
 		}
 		
 		// We wait to do this until now to preserve the previous schedule if we fail to properly parse this one.
@@ -151,8 +167,8 @@ public class FileParser {
 		currentSchedule.addAll(newSchedule);
 		
 		// Overwrite the previously existing schedule (if any) with this one.
-//		for(TimeRange r : currentSchedule)
-//			schedule.removeStops(r);
+		for(TimeRange r : currentSchedule)
+			schedule.removeStops(r);
 	}
 
 	private void parseStops(String[] tokens) {
@@ -161,10 +177,76 @@ public class FileParser {
 			throw new NoScheduleParseException("Attempted to parse stops without an enclosing schedule.");
 		
 		String keyword = tokens[0];
+		if(!keywords.contains(keyword))
+			// TODO: Graceful error.
+			return;
+		
 		// If our schedule starts in the PM, then start in the PM
-		boolean pm = currentSchedule.iterator().next().getBeginning().getHour() >= 12;
+//		boolean pm = currentSchedule.iterator().next().getBeginning().getHour() >= 12;
+//		Time lastParsed = null;
 		for (int i = 1; i < tokens.length; i++) {
-			// TODO: this still does nothing....
+			/* TODO: Magic am/pm
+			Time newTime = Time.parse(tokens[i], Day.SATURDAY); // I like saturdays.
+			if(lastParsed != null) {
+				if (newTime.equalToTime(lastParsed))
+					// TODO: Log a warning that we're skipping a duplicate time
+					continue;
+				
+				pm = checkAmPm(lastParsed, newTime, pm);
+			}			
+			
+			// We explode each time into the appropriate number of Stops
+			parseTimes(keyword, tokens[i], pm);
+			*/
+			parseTimes(keyword, tokens[i], false);
+			
+//			lastParsed = newTime;
+		}
+	}
+
+//	private boolean checkAmPm(Time lastParsed, Time newTime, boolean pm) {
+//		if(pm) {
+//			if(newTime.getHour() < 12)
+//				newTime = newTime.addHours(12);
+//			if(newTime.getDay() == lastParsed.getDay() && newTime.compareTo(lastParsed) < 0)
+//				// Looks like we're now in am
+//				return false;
+//		 } else if(newTime.compareTo(lastParsed) < 0 ) {
+//				// Assume we crossed the am/pm boundary.
+//				return true;
+//		 }
+//
+//		return pm;
+//	}
+
+	private void parseTimes(String keyword, String time, boolean pm) {
+		Direction dir;
+		if(time.indexOf('o') >= 0)
+			dir = OUTBOUND; 
+		else if(time.indexOf('i') >= 0)
+			dir = INBOUND; 
+		else
+			dir = NONE;
+		
+		for (TimeRange r : currentSchedule) {
+			Time parsedTime = Time.parse(time, r.getBeginning().getDay());
+			if(r.getBeginning().getDay() == r.getEnd().getDay()) {
+				if(!r.isInRange(parsedTime))
+						// TODO: Handle error case
+						continue;
+			} else {
+				Time nextDayParsedTime = parsedTime.addDays(1);
+				if (!r.isInRange(parsedTime) && !r.isInRange(nextDayParsedTime))
+					// TODO: Handle error case
+					continue;
+				else if (!r.isInRange(parsedTime) && r.isInRange(nextDayParsedTime))
+					parsedTime = nextDayParsedTime;
+			}			
+			
+			if(pm && parsedTime.getHour() < 12)
+				parsedTime.addHours(12);
+			
+			schedule.addStop(new Stop(keyword, parsedTime, dir));
 		}
 	}
 }
