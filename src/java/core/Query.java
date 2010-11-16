@@ -13,7 +13,7 @@ public class Query {
 	private final Date timeSent;
 
 	/** The time the request was received. */
-	private final Date timeReceived;
+	private Date timeReceived;
 
 	/** The time the response finished sending. */
 	private Date timeResponded;
@@ -109,6 +109,11 @@ public class Query {
 
 	public void setResponse(String response) {
 		this.response = response;
+	}
+
+	/** Do not use this except for testing */
+	protected void setTimeReceived(Date timeReceived) {
+		this.timeReceived = timeReceived;
 	}
 
 	public void setTimeResponded(Date timeResponded) {
