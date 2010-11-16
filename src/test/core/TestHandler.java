@@ -11,14 +11,14 @@ public class TestHandler extends MessageHandler {
 	}
 
 	@Override
-	public String defaultMessage(Date time) {
+	public String unrecognizedKeywordMessage(Date time, int maxLength) {
 		String response = getHeader(time);
 		response += "\nTest Handler\nThis is a default response.";
 		return response;
 	}
 
 	@Override
-	public String getHandlerResponse(Query query) {
+	public String keywordMessage(Query query, int maxLength) {
 		String response = getHeader(query.getTimeReceived());
 		response += "\nTest Handler\nKeyword recognized: " + query.getKeyword();
 		return response;

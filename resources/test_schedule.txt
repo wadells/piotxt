@@ -1,0 +1,16 @@
+##############################
+# Stop Configuration         #
+##############################
+Portland, pdx
+Seattle, sea
+Missoula, mso
+
+##############################
+# Weeklong Schedule           #
+##############################
+Schedule: Monday-Sunday 7:00am-11:00pm
+
+pdx, 7:00am, 8:00, 9:00,  10:00, 11:00, 12:00pm, 1:00pm, 2:00pm, 3:00pm, 4:00pm, 5:00pm, 6:00pm, 7:00pm, 8:00pm, 9:00pm, 10:00pm, 11:00pm
+sea, 7:10am o, 8:10 o, 9:10 o,  10:10 o, 11:10 o, 12:10pm o, 1:10pm o, 2:10pm o, 3:10pm o, 4:10pm o, 5:10pm o, 6:10pm o, 7:10pm o, 8:10pm o, 9:10pm o, 10:10pm o
+sea, 7:50am i, 8:50 i, 9:50 i,  10:50 i, 11:50 i, 12:50pm i, 1:50pm i, 2:50pm i, 3:50pm i, 4:50pm i, 5:50pm i, 6:50pm i, 7:50pm i, 8:50pm i, 9:50pm i, 10:50pm i
+mso, 7:31am, 8:31, 9:31,  10:31, 11:31, 12:31pm, 1:31pm, 2:31pm, 3:31pm, 4:31pm, 5:31pm, 6:31pm, 7:31pm, 8:31pm, 9:31pm, 10:31pm

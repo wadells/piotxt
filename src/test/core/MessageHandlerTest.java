@@ -15,7 +15,7 @@ public abstract class MessageHandlerTest {
 
 	protected final String timeString = STD_DATE_FORM.format(time);
 
-	protected final String phone = "123-456-7890";
+	protected final String phoneNumber = "+15037777777";
 
 	/** The maximum length of a single text message. */
 	private static final int MAX_TEXT_LENGTH = 160;
@@ -23,7 +23,7 @@ public abstract class MessageHandlerTest {
 	@Test
 	public void testResponseLengths() {
 		for (String key : keywords.words()) {
-			Query q = new Query(time, key, phone);
+			Query q = new Query(time, key, phoneNumber);
 			String response = handler.getResponse(q);
 			assertTrue(response.length() <= MAX_TEXT_LENGTH);
 		}
@@ -36,7 +36,7 @@ public abstract class MessageHandlerTest {
 		for (String k : keywords.words()) {
 			expected += "\n" + k.toUpperCase() + " " + keywords.getDefinition(k);
 		}
-		String response = handler.getResponse(new Query(time, "help", phone));
+		String response = handler.getResponse(new Query(time, "help", phoneNumber));
 		assertEquals(expected, response);
 	}
 
