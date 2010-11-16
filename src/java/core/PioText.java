@@ -209,7 +209,8 @@ public class PioText {
 		try {
 			props = load(PROPERTY_FILE, SECURE_PROPERTY_FILE);
 		} catch (IOException e) {
-			System.err.println("Could load properties at " + PROPERTY_FILE
+			// TODO: Error log this
+			System.err.println("Could load properties at " + PROPERTY_FILE.getAbsolutePath()
 					+ ".  Exiting...");
 			e.printStackTrace();
 			System.exit(1);
