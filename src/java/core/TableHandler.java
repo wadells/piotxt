@@ -22,7 +22,7 @@ public class TableHandler extends MessageHandler {
 	private static final String ALL_KEYWORD = "all";
 
 	/** The message that is displayed when there is a break in service. */
-	private static final String BREAK_NOTICE = "(not in service)";
+	private static final String BREAK_NOTICE = "(service break)";
 
 	/**
 	 * If there are more than this number of minutes between stops, then
@@ -47,16 +47,18 @@ public class TableHandler extends MessageHandler {
 	 * 
 	 * @param stops
 	 *            the list of stops to be formatted
+	 * @param time
+	 *            the current time (used for calculating schedule breaks)
 	 * @param chars
 	 *            the maximum length of the response
 	 * @param shortFormat
 	 *            true if stops should be displayed in their short format
 	 * @return a the list of stops
 	 */
-	private String formatStops(Iterable<Stop> stops, int maxLength,
-			boolean shortFormat) {
+	private String formatStops(Iterable<Stop> stops, Date time,
+			int maxLength, boolean shortFormat) {
 		StringBuilder response = new StringBuilder();
-		Time previousStopTime = Time.now(); // used for calculating breaks
+		Time previousStopTime = new Time(time.getTime()); // used for calculating breaks
 		for (Stop s : stops) {
 			Time currentStopTime = s.getTime();
 			// calculate if there is a break in Pio Express service
@@ -104,7 +106,7 @@ public class TableHandler extends MessageHandler {
 		Time requestTime = new Time(time.getTime());
 		TimeRange range = new TimeRange(requestTime, requestTime.addDays(1));
 		Iterable<Stop> stops = schedule.getStops(range);
-		String stopList = formatStops(stops, maxLength, false);
+		String stopList = formatStops(stops, time, maxLength, false);
 		return stopList;
 	}
 
@@ -127,7 +129,7 @@ public class TableHandler extends MessageHandler {
 		Time requestTime = new Time(time.getTime());
 		Iterable<Stop> stops = schedule.getNextStops(keyword, requestTime, 20);
 		int charactersLeft = maxLength - response.length();
-		response += formatStops(stops, charactersLeft, true);
+		response += formatStops(stops, time, charactersLeft, true);
 		return response;
 	}
 
