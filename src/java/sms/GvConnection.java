@@ -54,7 +54,7 @@ public class GvConnection implements SmsConnection {
 		} catch (CaptchaRequiredException e) {
 			String notice = String
 					.format(
-							"A Google Voice captcha is required.\nImage URL  = %s\nCapt Token = %s\n\n",
+							"A Google Voice captcha is required.\nImage URL = %s\nCapt Token = %s\n\n",
 							e.getCaptchaUrl(), e.getCaptchaToken());
 			throw new ConnectionException(notice, e);
 		} catch (IOException e) {
