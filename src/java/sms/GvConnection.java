@@ -73,6 +73,10 @@ public class GvConnection implements SmsConnection {
 				throw new ConnectionException(
 						"Unable to delete sms though Google Voice.", e);
 			}
+		} else {
+			throw new java.lang.IllegalArgumentException(
+					"Unable to delete query that came from a provider other than Google Voice. Query type: "
+							+ query.getClass());
 		}
 
 	}
