@@ -159,7 +159,7 @@ public class Log {
 		String phonehash = generateID(q.getPhoneNumber());
 		String sent = LOG_DATE_FORM.format(q.getTimeSent());
 		String responded = LOG_DATE_FORM.format(q.getTimeResponded());
-		String sysinfo = "--------"; // TODO : put actual system information
+		String sysinfo = "BETA-0.8"; // TODO : put actual system information
 		// here
 		String keyword = q.getKeyword() == null ? "null" : q.getKeyword();
 		String body = flatten(q.getBody());
