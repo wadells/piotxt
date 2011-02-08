@@ -21,7 +21,7 @@ import sms.SmsConnection;
  */
 public class PioText {
 
-	public final static String VERSION = "piotxt-v0.5";
+	public final static String VERSION = "piotxt-v0.8";
 
 	/** How often PioText will check for new messages, in ms. */
 	private final static long CHECK_FREQ = 60000;

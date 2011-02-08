@@ -1,20 +1,18 @@
 package sms;
 
-import gvjava.org.json.JSONException;
-
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
-import org.xml.sax.SAXException;
-
 import com.techventus.server.voice.Voice;
-import com.techventus.server.voice.exception.CaptchaRequiredException;
+import com.techventus.server.voice.datatypes.records.SMS;
+import com.techventus.server.voice.datatypes.records.SMSThread;
 
 import static core.PioText.*;
 import core.PioText;
 import core.Query;
-import static sms.GoogleXmlParser.*;
 
 /**
  * A connection to send and recieve texts from Google Voice. The setup() method
@@ -51,12 +49,12 @@ public class GvConnection implements SmsConnection {
 	public void connect() throws ConnectionException {
 		try {
 			voice = new Voice(username, password, PioText.VERSION, false);
-		} catch (CaptchaRequiredException e) {
-			String notice = String
-					.format(
-							"A Google Voice captcha is required.\nImage URL = %s\nCapt Token = %s\n\n",
-							e.getCaptchaUrl(), e.getCaptchaToken());
-			throw new ConnectionException(notice, e);
+//		} catch (CaptchaRequiredException e) {
+//			String notice = String
+//					.format(
+//							"A Google Voice captcha is required.\nImage URL = %s\nCapt Token = %s\n\n",
+//							e.getCaptchaUrl(), e.getCaptchaToken());
+//			throw new ConnectionException(notice, e);
 		} catch (IOException e) {
 			throw new ConnectionException("Unable to connect to Google Voice.",
 					e);
@@ -81,49 +79,107 @@ public class GvConnection implements SmsConnection {
 
 	}
 
+	/**
+	 * A helper method to find the most recent message in a conversation.
+	 *<p>
+	 * This is necessary because google voice hangs onto all messages, even
+	 * after the are deleted. When a new message is added to the conversation,
+	 * all the old ones are dredged up. But we only care about the most recent
+	 * one, and only if it doesn't come from us.
+	 * 
+	 * @param conversation
+	 *            the SMSThread to search
+	 * @return the newest SMS in the thread
+	 */
+	protected static SMS getMostRecentSms(SMSThread conversation) {
+		if (conversation.getAllSMS().size() < 1) {
+			return null;
+		}
+		SMS newest = conversation.getAllSMS().iterator().next();
+		for (SMS sms : conversation.getAllSMS()) {
+			if (sms.getDateTime().getTime() > newest.getDateTime().getTime()) {
+				newest = sms;
+			}
+		}
+		return newest;
+	}
+
+	// // Old, and easily broken. Don't use this. WJ 1/5/2011
+	// @Override
+	// public List<GvQuery> getNewMessages() throws ConnectionException {
+	// // retrieve from GV
+	// String page = null;
+	// try {
+	// page = voice.getSMS();
+	// } catch (IOException e) {
+	// throw new ConnectionException(
+	// "Could retrieve sms from Google Voice.", e);
+	// }
+	//
+	// // once retrieved, parse xml
+	// List<GvQuery> messages = null;
+	// try {
+	// messages = parse(page);
+	// } catch (SAXException e) {
+	// // can't parse the xml, then save it for analysis
+	// String url = String.format("log/unparsable_%03d.xml", page
+	// .hashCode());
+	// try {
+	// utils.FileUtils.writeFile(url, page, true);
+	// } catch (IOException ignored) {
+	// // ideally this will never happen
+	// ignored.printStackTrace();
+	// }
+	// throw new ConnectionException(
+	// "Could not parse sms xml returned by Google Voice. Saving xml.",
+	// e);
+	// } catch (JSONException e) {
+	// // can't parse the json, then save it for analysis
+	// String url = String.format("log/unparsable_%03d.xml", page
+	// .hashCode());
+	// try {
+	// utils.FileUtils.writeFile(url, page, true);
+	// } catch (IOException ignored) {
+	// // ideally this will never happen
+	// ignored.printStackTrace();
+	// }
+	// throw new ConnectionException(
+	// "Could not parse json returned by Google Voice. Saving xml.",
+	// e);
+	// }
+	// return messages;
+	// }
+
 	@Override
 	public List<GvQuery> getNewMessages() throws ConnectionException {
 		// retrieve from GV
-		String page = null;
+		Collection<SMSThread> conversations = null;
 		try {
-			page = voice.getSMS();
+			conversations = voice.getSMSThreads();
+			// once retrieved, pull out relavant messages
+			List<GvQuery> messages = new ArrayList<GvQuery>();
+			for (SMSThread conv : conversations) {
+				SMS newest = getMostRecentSms(conv);
+				// if there is a newest message in the conversation
+				// and if the message was not from us (e.g. ignore conversations
+				// where piotxt has already responded)
+				if (newest != null) {
+					boolean sentByPioTxt = newest.getFrom().getNumber().equals(
+							voice.getPhoneNumber());
+					if (!sentByPioTxt) {
+						String phoneNumber = newest.getFrom().getNumber();
+						String googleID = newest.getFrom().getId();
+						GvQuery q = new GvQuery(newest.getDateTime(), newest
+								.getContent(), phoneNumber, googleID);
+						messages.add(q);
+					}
+				}
+			}
+			return messages;
 		} catch (IOException e) {
 			throw new ConnectionException(
 					"Could retrieve sms from Google Voice.", e);
 		}
-
-		// once retrieved, parse xml
-		List<GvQuery> messages = null;
-		try {
-			messages = parse(page);
-		} catch (SAXException e) {
-			// can't parse the xml, then save it for analysis
-			String url = String.format("log/unparsable_%03d.xml", page
-					.hashCode());
-			try {
-				utils.FileUtils.writeFile(url, page, true);
-			} catch (IOException ignored) {
-				// ideally this will never happen
-				ignored.printStackTrace();
-			}
-			throw new ConnectionException(
-					"Could not parse sms xml returned by Google Voice. Saving xml.",
-					e);
-		} catch (JSONException e) {
-			// can't parse the json, then save it for analysis
-			String url = String.format("log/unparsable_%03d.xml", page
-					.hashCode());
-			try {
-				utils.FileUtils.writeFile(url, page, true);
-			} catch (IOException ignored) {
-				// ideally this will never happen
-				ignored.printStackTrace();
-			}
-			throw new ConnectionException(
-					"Could not parse json returned by Google Voice. Saving xml.",
-					e);
-		}
-		return messages;
 	}
 
 	String getRawSmsXml() throws IOException {
