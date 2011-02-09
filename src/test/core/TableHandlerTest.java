@@ -53,12 +53,12 @@ public class TableHandlerTest extends MessageHandlerTest {
 
 	@Test
 	public void testSingleStopDirectional() {
-		// TODO: test this
+		fail("Not implemented yet.");
 	}
 
 	@Test
 	public void testUnknownKeyword() {
-		// TODO: test this
+		fail("Not implemented yet.");
 	}
 
 }
