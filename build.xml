@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="run" name="PioTxt" basedir=".">
+
+	<!-- - - - - - - - - - - - - - - - - - 
+		  config: properties & filesets
+	     - - - - - - - - - - - - - - - - - -->
+	<property name="verbose" value="false" />
+	<property name="file.runnable" value="piotxt.jar" />
+	<property name="dir.lib" location="lib" />
+	<property name="dir.source" location="src" />
+	<property name="dir.resources" location="resources" />
+	<property name="dir.target" location="bin" />
+	<fileset id="libraries" dir="${dir.lib}">
+		<include name="*.jar" />
+	</fileset>
+
+	<!-- - - - - - - - - - - - - - - - - - 
+		  config: classpaths
+		 - - - - - - - - - - - - - - - - - -->
+	<path id="compile-classpath">
+		<fileset refid="libraries" />
+	</path>
+	<path id="test-classpath">
+		<fileset refid="libraries" />
+		<pathelement path="${dir.target}" />
+	</path>
+
+	<!-- - - - - - - - - - - - - - - - - - 
+          target: clean                 
+         - - - - - - - - - - - - - - - - - -->
+	<target name="clean" description="remove ${dir.target}">
+		<delete dir="${dir.target}" verbose="${verbose}" />
+	</target>
+
+	<!-- - - - - - - - - - - - - - - - - - 
+          target: squeaky-clean                 
+         - - - - - - - - - - - - - - - - - -->
+	<target name="squeaky-clean" description="remove ${dir.target} and other cluttery files">
+		<delete dir="${dir.target}" verbose="${verbose}" />
+		<delete file="${file.runnable}" />
+		<!--<delete > scrapped this as log data is important
+			<fileset dir="${dir.log}" includes="*" />
+		</delete>-->
+	</target>
+
+	<!-- - - - - - - - - - - - - - - - - - 
+          target: compile                     
+         - - - - - - - - - - - - - - - - - -->
+	<target name="compile" description="compile all .java files">
+		<mkdir dir="${dir.target}" />
+		<javac destdir="${dir.target}" srcdir="${dir.source}" verbose="${verbose}" includeAntRuntime="true">
+			<classpath refid="compile-classpath" />
+		</javac>
+	</target>
+
+	<!-- - - - - - - - - - - - - - - - - - 
+          target: test                      
+         - - - - - - - - - - - - - - - - - -->
+	<target name="test" depends="clean,compile" description="run all junit test cases">
+		<junit printsummary="true" haltonfailure="false">
+			<classpath refid="test-classpath" />
+			<formatter type="brief" usefile="false" />
+			<batchtest>
+				<fileset dir="${dir.target}" includes="**/*Test.class" />
+			</batchtest>
+		</junit>
+	</target>
+
+	<!-- - - - - - - - - - - - - - - - - - 
+	      target: build                     
+	     - - - - - - - - - - - - - - - - - -->
+	<target name="build" description="create runnable .jar">
+		<jar destfile="${file.runnable}">
+			<manifest>
+				<attribute name="Main-Class" value="org.eclipse.jdt.internal.jarinjarloader.JarRsrcLoader" />
+				<attribute name="Rsrc-Main-Class" value="core.PioText" />
+				<attribute name="Class-Path" value="." />
+				<attribute name="Rsrc-Class-Path" value="./ junit.jar org.hamcrest.core_1.1.0.v20090501071000.jar google-voice-java-137.jar dom4j-1.6.1.jar jaxen-1.1.3.jar json.jar jtidy.jar" />
+			</manifest>
+			<zipfileset src="jar-in-jar-loader.zip" />
+			<fileset dir="${dir.target}" />
+			<zipfileset dir="/Applications/eclipse/plugins/org.junit4_4.5.0.v20090824" includes="junit.jar" />
+			<zipfileset dir="/Applications/eclipse/plugins" includes="org.hamcrest.core_1.1.0.v20090501071000.jar" />
+			<zipfileset dir="${dir.lib}" includes="*.jar" />
+		</jar>
+	</target>
+	<target name="run" depends="clean,compile,test,build">
+		<java jar="${jar.file}" fork="true" />
+	</target>
+</project>
