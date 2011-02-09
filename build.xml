@@ -2,7 +2,7 @@
 <project default="run" name="PioTxt" basedir=".">
 
 	<!-- - - - - - - - - - - - - - - - - - 
-		  config: properties & filesets
+	     config: properties & filesets
 	     - - - - - - - - - - - - - - - - - -->
 	<property name="verbose" value="false" />
 	<property name="file.runnable" value="piotxt.jar" />
@@ -15,8 +15,8 @@
 	</fileset>
 
 	<!-- - - - - - - - - - - - - - - - - - 
-		  config: classpaths
-		 - - - - - - - - - - - - - - - - - -->
+             config: classpaths
+	     - - - - - - - - - - - - - - - - - -->
 	<path id="compile-classpath">
 		<fileset refid="libraries" />
 	</path>
