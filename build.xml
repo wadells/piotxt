@@ -4,28 +4,28 @@
 	<!-- - - - - - - - - - - - - - - - - - 
 	      config: properties & filesets
 	     - - - - - - - - - - - - - - - - - -->
-	<property name="dir.lib" location="lib" />
-	<property name="dir.resources" location="resources" />
-	<property name="dir.build" location="build" />
+	<property name="dir.lib" value="lib" />
+	<property name="dir.resources" value="resources" />
+	<property name="dir.build" value="build" />
 	<property name="jar.runnable" value="piotxt.jar" />
-	<property name="dir.src" location="src" />
-	<property name="dir.src.src" location="${dir.src}/source"/>
-	<property name="dir.src.test" location="${dir.src}/test"/>
-	<property name="dir.target" location="target" />
-	<property name="dir.target.src" location="${dir.target}/source"/>
-	<property name="dir.target.test" location="${dir.target}/test"/>
-	<fileset id="libraries" dir="${dir.lib}">
-		<include name="*.jar" />
+	<property name="dir.src" value="src" />
+	<property name="dir.src.src" value="${dir.src}/source" />
+	<property name="dir.src.test" value="${dir.src}/test" />
+	<property name="dir.target" value="target" />
+	<property name="dir.target.src" value="${dir.target}/source" />
+	<property name="dir.target.test" value="${dir.target}/test" />
+	<fileset id="set.libraries" dir=".">
+		<include name="${dir.lib}/*.jar" />
 	</fileset>
 
 	<!-- - - - - - - - - - - - - - - - - - 
           config: classpaths
 	     - - - - - - - - - - - - - - - - - -->
-	<path id="compile-classpath">
-		<fileset refid="libraries" />
+	<path id="classpath.compile">
+		<fileset refid="set.libraries" />
 	</path>
-	<path id="test-classpath">
-		<fileset refid="libraries" />
+	<path id="classpath.test">
+		<fileset refid="set.libraries" />
 		<pathelement path="${dir.target.src}" />
 		<pathelement path="${dir.target.test}" />
 	</path>
@@ -39,26 +39,38 @@
 	</target>
 
 	<!-- - - - - - - - - - - - - - - - - - 
-          target: compile                     
+          target: compile-source
          - - - - - - - - - - - - - - - - - -->
-	<target name="compile" description="compile all .java files in ${dir.src.src}">
+	<target name="compile-source" description="compile all .java files in ${dir.src.src}">
 		<mkdir dir="${dir.target}" />
 		<mkdir dir="${dir.target.src}" />
 		<javac destdir="${dir.target.src}" srcdir="${dir.src.src}" includeAntRuntime="true">
-			<classpath refid="compile-classpath" />
-		</javac>
-		<mkdir dir="${dir.target.test}" />
-		<javac destdir="${dir.target.test}" srcdir="${dir.src.test}" includeAntRuntime="true">
-			<classpath refid="test-classpath" />
+			<classpath refid="classpath.compile" />
 		</javac>
 	</target>
 
 	<!-- - - - - - - - - - - - - - - - - - 
+          target: compile                      
+         - - - - - - - - - - - - - - - - - -->
+	<target name="compile" description="compile all .java files in ${dir.src}">
+		<mkdir dir="${dir.target}" />
+		<mkdir dir="${dir.target.src}" />
+		<javac destdir="${dir.target.src}" srcdir="${dir.src.src}" includeAntRuntime="true">
+			<classpath refid="classpath.compile" />
+		</javac>
+		<mkdir dir="${dir.target.test}" />
+		<javac destdir="${dir.target.test}" srcdir="${dir.src.test}" includeAntRuntime="true">
+			<classpath refid="classpath.test" />
+		</javac>
+	</target>
+
+
+	<!-- - - - - - - - - - - - - - - - - - 
           target: test                      
          - - - - - - - - - - - - - - - - - -->
-	<target name="test" depends="clean,compile" description="run all junit test cases">
+	<target name="test" depends="compile" description="run all junit test cases">
 		<junit printsummary="true" haltonfailure="false">
-			<classpath refid="test-classpath" />
+			<classpath refid="classpath.test" />
 			<formatter type="brief" usefile="false" />
 			<batchtest>
 				<fileset dir="${dir.target.test}" includes="**/*Test.class" />
@@ -69,22 +81,41 @@
 	<!-- - - - - - - - - - - - - - - - - - 
 	      target: build                     
 	     - - - - - - - - - - - - - - - - - -->
-	<target name="build" description="create runnable .jar">
-		<!-- Extract get metadata to properties. -->
+	<target name="build" depends="clean,compile-source" description="create runnable .jar">
+		<!-- Extract metadata to properties. -->
 		<exec executable="git" outputproperty="git.commit">
 			<arg value="log" />
 			<arg value="-1" />
 			<arg value="--format=%H" />
 		</exec>
-		
-		<jar destfile="${jar.runnable}">
+		<!-- Delete old build and rebuild framework. -->
+		<delete dir="${dir.build}" />
+		<mkdir dir="${dir.build}" />
+		<mkdir dir="${dir.build}/${dir.resources}" />
+		<!-- Copy resources over. -->
+		<copy todir="${dir.build}/${dir.resources}">
+			<fileset dir="${dir.resources}">
+				<include name="**/*" />
+			</fileset>
+		</copy>
+		<!-- Copy libraries over. -->
+		<copy todir="${dir.build}/${dir.lib}">
+			<fileset refid="set.libraries" />
+		</copy>
+		<!-- Establish manifest classpath. -->
+	    <manifestclasspath property="classpath.manifest" jarfile="${jar.runnable}">
+	        <classpath refid="classpath.compile" />
+	    </manifestclasspath>
+		<!-- Create runnable jar. -->
+		<jar destfile="${dir.build}/${jar.runnable}">
 			<manifest>
-				<attribute name="Built-By" value="${git.user.name}" />
+				<attribute name="Built-By" value="${user.name}" />
 				<attribute name="Built-Date" value="${TODAY}" />
-				<attribute name="Git-Commit" value="${git.commit}"/>
-				<attribute name="Main-Class" value="core.PioText" />		
+				<attribute name="Git-Commit" value="${git.commit}" />
+				<attribute name="Main-Class" value="core.PioText" />
+				<attribute name="Class-Path" value="${classpath.manifest}" />
 			</manifest>
-			<fileset dir="${dir.target}" />
+			<fileset dir="${dir.target.src}" />
 			<zipfileset dir="${dir.lib}" includes="*.jar" />
 		</jar>
 	</target>
@@ -92,14 +123,8 @@
 	<!-- - - - - - - - - - - - - - - - - - 
 	      target: run                   
 	     - - - - - - - - - - - - - - - - - -->
-	<target name="run" depends="clean,compile,test,build">
-		<java jar="${jar.file}" fork="true" />
+	<target name="run">
+		<java jar="${dir.build}/${jar.file}" fork="true" />
 	</target>
-
-	<target name="print">
-
-		<echo message="${git.commit}" />
-	</target>
-
 
 </project>
