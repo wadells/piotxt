@@ -4,11 +4,15 @@
 .project
 bin/
 
+# ant files
+target/
+build/
+
 # sensitive setup information
 resources/secure.properties
 
 # OS WTF Files
 .DS_Store
 
-# generated log files
-log/*
+# piotxt generated files
+log/

@@ -4,12 +4,16 @@
 	<!-- - - - - - - - - - - - - - - - - - 
 	      config: properties & filesets
 	     - - - - - - - - - - - - - - - - - -->
-	<property name="verbose" value="false" />
-	<property name="file.runnable" value="piotxt.jar" />
 	<property name="dir.lib" location="lib" />
-	<property name="dir.source" location="src" />
 	<property name="dir.resources" location="resources" />
-	<property name="dir.target" location="bin" />
+	<property name="dir.build" location="build" />
+	<property name="jar.runnable" value="piotxt.jar" />
+	<property name="dir.src" location="src" />
+	<property name="dir.src.src" location="${dir.src}/source"/>
+	<property name="dir.src.test" location="${dir.src}/test"/>
+	<property name="dir.target" location="target" />
+	<property name="dir.target.src" location="${dir.target}/source"/>
+	<property name="dir.target.test" location="${dir.target}/test"/>
 	<fileset id="libraries" dir="${dir.lib}">
 		<include name="*.jar" />
 	</fileset>
@@ -22,34 +26,30 @@
 	</path>
 	<path id="test-classpath">
 		<fileset refid="libraries" />
-		<pathelement path="${dir.target}" />
+		<pathelement path="${dir.target.src}" />
+		<pathelement path="${dir.target.test}" />
 	</path>
 
 	<!-- - - - - - - - - - - - - - - - - - 
           target: clean                 
          - - - - - - - - - - - - - - - - - -->
 	<target name="clean" description="remove ${dir.target}">
-		<delete dir="${dir.target}" verbose="${verbose}" />
-	</target>
-
-	<!-- - - - - - - - - - - - - - - - - - 
-          target: squeaky-clean                 
-         - - - - - - - - - - - - - - - - - -->
-	<target name="squeaky-clean" description="remove ${dir.target} and other cluttery files">
-		<delete dir="${dir.target}" verbose="${verbose}" />
-		<delete file="${file.runnable}" />
-		<!--<delete > scrapped this as log data is important
-			<fileset dir="${dir.log}" includes="*" />
-		</delete>-->
+		<delete dir="${dir.target}" />
+		<delete dir="${dir.build}" />
 	</target>
 
 	<!-- - - - - - - - - - - - - - - - - - 
           target: compile                     
          - - - - - - - - - - - - - - - - - -->
-	<target name="compile" description="compile all .java files">
+	<target name="compile" description="compile all .java files in ${dir.src.src}">
 		<mkdir dir="${dir.target}" />
-		<javac destdir="${dir.target}" srcdir="${dir.source}" verbose="${verbose}" includeAntRuntime="true">
+		<mkdir dir="${dir.target.src}" />
+		<javac destdir="${dir.target.src}" srcdir="${dir.src.src}" includeAntRuntime="true">
 			<classpath refid="compile-classpath" />
+		</javac>
+		<mkdir dir="${dir.target.test}" />
+		<javac destdir="${dir.target.test}" srcdir="${dir.src.test}" includeAntRuntime="true">
+			<classpath refid="test-classpath" />
 		</javac>
 	</target>
 
@@ -61,7 +61,7 @@
 			<classpath refid="test-classpath" />
 			<formatter type="brief" usefile="false" />
 			<batchtest>
-				<fileset dir="${dir.target}" includes="**/*Test.class" />
+				<fileset dir="${dir.target.test}" includes="**/*Test.class" />
 			</batchtest>
 		</junit>
 	</target>
@@ -70,21 +70,36 @@
 	      target: build                     
 	     - - - - - - - - - - - - - - - - - -->
 	<target name="build" description="create runnable .jar">
-		<jar destfile="${file.runnable}">
+		<!-- Extract get metadata to properties. -->
+		<exec executable="git" outputproperty="git.commit">
+			<arg value="log" />
+			<arg value="-1" />
+			<arg value="--format=%H" />
+		</exec>
+		
+		<jar destfile="${jar.runnable}">
 			<manifest>
-				<attribute name="Main-Class" value="org.eclipse.jdt.internal.jarinjarloader.JarRsrcLoader" />
-				<attribute name="Rsrc-Main-Class" value="core.PioText" />
-				<attribute name="Class-Path" value="." />
-				<attribute name="Rsrc-Class-Path" value="./ junit.jar org.hamcrest.core_1.1.0.v20090501071000.jar google-voice-java-137.jar dom4j-1.6.1.jar jaxen-1.1.3.jar json.jar jtidy.jar" />
+				<attribute name="Built-By" value="${git.user.name}" />
+				<attribute name="Built-Date" value="${TODAY}" />
+				<attribute name="Git-Commit" value="${git.commit}"/>
+				<attribute name="Main-Class" value="core.PioText" />		
 			</manifest>
-			<zipfileset src="jar-in-jar-loader.zip" />
 			<fileset dir="${dir.target}" />
-			<zipfileset dir="/Applications/eclipse/plugins/org.junit4_4.5.0.v20090824" includes="junit.jar" />
-			<zipfileset dir="/Applications/eclipse/plugins" includes="org.hamcrest.core_1.1.0.v20090501071000.jar" />
 			<zipfileset dir="${dir.lib}" includes="*.jar" />
 		</jar>
 	</target>
+
+	<!-- - - - - - - - - - - - - - - - - - 
+	      target: run                   
+	     - - - - - - - - - - - - - - - - - -->
 	<target name="run" depends="clean,compile,test,build">
 		<java jar="${jar.file}" fork="true" />
 	</target>
+
+	<target name="print">
+
+		<echo message="${git.commit}" />
+	</target>
+
+
 </project>
