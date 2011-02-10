@@ -5,7 +5,7 @@ import static org.junit.Assert.*;
 import org.junit.*;
 import static core.MessageHandler.STD_DATE_FORM;
 
-public abstract class MessageHandlerTest {
+public abstract class MessageHandlerTestTemplate {
 
 	protected MessageHandler handler;
 	

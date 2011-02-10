@@ -15,7 +15,7 @@ import time.Time;
 import time.TimeRange;
 
 // TODO: Test idempotency of adding stops
-public abstract class MutableScheduleTest {
+public abstract class MutableScheduleTestTemplate {
 
 	private MutableSchedule schedule;
 	

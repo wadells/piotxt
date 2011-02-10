@@ -5,7 +5,7 @@ import java.util.Date;
 import static org.junit.Assert.*;
 import org.junit.*;
 
-public class TableHandlerTest extends MessageHandlerTest {
+public class TableHandlerTest extends MessageHandlerTestTemplate {
 
 	private static final File TEST_SCHEDULE = new File(
 			"resources/test_schedule.txt");
