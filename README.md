@@ -13,7 +13,6 @@ If you would like to know more about the project contact github user
 javins.
 
 **Developers:**  If you want to compile/test/build/run piotxt, you'll
-need a Java 1.6+, Apache Ant, and JUnit 4+ in a place that ant
-knows about.  These are common enough that I didn't deem it necessary
-to provide them.  All other required libraries are bundled in the
-lib/ directory.
+need a Java 1.6+, and Apache Ant.  Ant is common enough that I didn't
+deem it necessary to provide a library.  All other required 
+libraries are bundled in the lib/ directory.
