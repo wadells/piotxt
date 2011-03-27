@@ -99,9 +99,12 @@
 			</fileset>
 		</copy>
 		<!-- Copy libraries over. -->
+		<!-- Using jar-in-jar-loader for a single executeable instead of 
+			 having libraries in the build dir.  Bring this back later?
+		
 		<copy todir="${dir.build}/${dir.lib}">
 			<fileset refid="set.libraries" />
-		</copy>
+		</copy> -->
 		<!-- Establish manifest classpath. -->
 	    <manifestclasspath property="classpath.manifest" jarfile="${jar.runnable}">
 	        <classpath refid="classpath.compile" />
@@ -112,11 +115,14 @@
 				<attribute name="Built-By" value="${user.name}" />
 				<attribute name="Built-Date" value="${TODAY}" />
 				<attribute name="Git-Commit" value="${git.commit}" />
-				<attribute name="Main-Class" value="core.PioText" />
-				<attribute name="Class-Path" value="${classpath.manifest}" />
+                <attribute name="Main-Class" value="org.eclipse.jdt.internal.jarinjarloader.JarRsrcLoader"/>
+                <attribute name="Rsrc-Main-Class" value="core.PioText"/>
+                <attribute name="Class-Path" value="."/>
+                <attribute name="Rsrc-Class-Path" value="./ ${classpath.manifest}"/>
 			</manifest>
 			<fileset dir="${dir.target.src}" />
 			<zipfileset dir="${dir.lib}" includes="*.jar" />
+			<zipfileset src="${dir.lib}/jar-in-jar-loader.zip"/>
 		</jar>
 	</target>
 
@@ -124,7 +130,7 @@
 	      target: run                   
 	     - - - - - - - - - - - - - - - - - -->
 	<target name="run">
-		<java jar="${dir.build}/${jar.file}" fork="true" />
+		<java jar="${dir.build}/${jar.runnable}" fork="true" />
 	</target>
 
 </project>
