@@ -13,6 +13,18 @@ If you would like to know more about the project contact github user
 javins.
 
 **Developers:**  If you want to compile/test/build/run piotxt, you'll
-need a Java 1.6+, and Apache Ant.  Ant is common enough that I didn't
-deem it necessary to provide a library.  All other required 
-libraries are bundled in the lib/ directory.
+need a Java 1.6+, and Apache Ant. All other required libraries are 
+bundled in the lib/ directory.
+
+    ant compile
+
+will build the project.  You must build before trying to run the project.
+
+    ant run
+
+or
+
+    java -jar build/piotxt.jar
+
+will run the server.  You must have your google voice username and
+password in resources/secure.properties to sucessfully run the program.

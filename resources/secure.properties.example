@@ -1,0 +1,22 @@
+# Sensitive information for PioTxt
+
+# Lines that begin with # or ! are comments
+!     I'm a comment too.
+
+# propeties are defined by key value pairs, such as:
+#
+#     bottles_of_beer=99
+#
+# or a more complex property:
+#
+#     What_can.properties~look~1ike? = Keys can use anything except ":", "=" or whitespace. \
+#         Values can be anything, including newlines! \
+#         (with "\" at the end of the old line, and "\\" for a literal slash)
+
+# To set default login credentials for piotxt
+# Copy this file and remove ".example" from the copy
+# Then save your google voice username and password as two values below
+
+
+gv_user = [your username]
+gv_pass = [your password]
