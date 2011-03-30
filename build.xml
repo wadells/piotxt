@@ -14,8 +14,9 @@
 	<property name="dir.target" value="target" />
 	<property name="dir.target.src" value="${dir.target}/source" />
 	<property name="dir.target.test" value="${dir.target}/test" />
-	<fileset id="set.libraries" dir=".">
-		<include name="${dir.lib}/*.jar" />
+	<fileset id="set.libraries" dir="${dir.lib}">
+		<exclude name="junit*.jar"/>
+		<include name="*.jar" />
 	</fileset>
 
 	<!-- - - - - - - - - - - - - - - - - - 
@@ -26,10 +27,21 @@
 	</path>
 	<path id="classpath.test">
 		<fileset refid="set.libraries" />
+		<fileset dir=".">
+			<include name="${dir.lib}/junit*.jar" />
+		</fileset>
 		<pathelement path="${dir.target.src}" />
 		<pathelement path="${dir.target.test}" />
 	</path>
 
+	<!-- - - - - - - - - - - - - - - - - - 
+          target: debug                 
+         - - - - - - - - - - - - - - - - - -->
+	<target name="debug" description="print out ant properties as needed">
+		<property name="print" refid="classpath.test"/>
+		<echo message="files = ${print}"/>
+	</target>
+	
 	<!-- - - - - - - - - - - - - - - - - - 
           target: clean                 
          - - - - - - - - - - - - - - - - - -->
@@ -82,7 +94,9 @@
 	      target: build                     
 	     - - - - - - - - - - - - - - - - - -->
 	<target name="build" depends="clean,compile-source" description="create runnable .jar">
-		<!-- Extract metadata to properties. -->
+		<!-- Genertate DSTAMP, TSTAMP, and TODAY -->
+		<tstamp />
+		<!-- Extract git metadata to properties. -->
 		<exec executable="git" outputproperty="git.commit">
 			<arg value="log" />
 			<arg value="-1" />
@@ -121,7 +135,7 @@
                 <attribute name="Rsrc-Class-Path" value="./ ${classpath.manifest}"/>
 			</manifest>
 			<fileset dir="${dir.target.src}" />
-			<zipfileset dir="${dir.lib}" includes="*.jar" />
+			<zipfileset refid="set.libraries" prefix="${dir.lib}"/>
 			<zipfileset src="${dir.lib}/jar-in-jar-loader.zip"/>
 		</jar>
 	</target>
