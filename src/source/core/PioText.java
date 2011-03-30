@@ -31,7 +31,7 @@ public class PioText {
 
 	/** The file where setup information is stored. */
 	public final static File PROPERTY_FILE = new File(
-			"resources/pio_text.properties");
+			"resources/piotxt.properties");
 
 	/** The file where sensitive information is stored. */
 	public final static File SECURE_PROPERTY_FILE = new File(
