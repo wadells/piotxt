@@ -197,7 +197,7 @@ public class GvConnection implements SmsConnection {
 		}
 	}
 
-	// a simple test that prints all pending queries to the console
+	/*// a simple test that prints all pending queries to the console
 	public static void main(String[] args) throws IOException {
 		Properties props = load(PROPERTY_FILE, SECURE_PROPERTY_FILE);
 		GvConnection connection = new GvConnection(
@@ -213,6 +213,6 @@ public class GvConnection implements SmsConnection {
 		for (Query q : list) {
 			System.out.println(persistance.Log.queryToString(q));
 		}
-	}
+	}*/
 
 }

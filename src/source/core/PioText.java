@@ -1,5 +1,6 @@
 package core;
 
+import java.io.Console;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -185,15 +186,13 @@ public class PioText {
 	 * @return Properties
 	 * @throws IOException
 	 */
-	public static Properties load(File propsFile, File securePropsFile)
+	public static Properties load(File propsFile)
 			throws IOException {
 		Properties result = null;
 		InputStream propStream = new FileInputStream(propsFile);
-		InputStream securePropStream = new FileInputStream(securePropsFile);
-		if (propStream != null && securePropStream != null) {
+		if (propStream != null) {
 			result = new Properties();
 			result.load(propStream); // Can throw IOException
-			result.load(securePropStream);
 		}
 		return result;
 	}
@@ -207,14 +206,27 @@ public class PioText {
 		System.out.printf("%-30s", "Loading properties...");
 		Properties props = null;
 		try {
-			props = load(PROPERTY_FILE, SECURE_PROPERTY_FILE);
+			props = load(PROPERTY_FILE);
 		} catch (IOException e) {
 			// TODO: Error log this
-			System.err.println("Could load properties at " + PROPERTY_FILE.getAbsolutePath()
+			System.err.println("Could not load properties at " + PROPERTY_FILE.getAbsolutePath()
 					+ ".  Exiting...");
 			e.printStackTrace();
 			System.exit(1);
 		}
+		
+		Properties secureProps = null;
+		try {
+			secureProps = load(SECURE_PROPERTY_FILE);
+		} catch (IOException e) {
+			System.err.println("Could not load properties at " + SECURE_PROPERTY_FILE.getAbsolutePath());
+			secureProps = promptLogin();
+			if (secureProps == null) {
+				System.exit(1);
+			}
+		}
+		
+		props.putAll(secureProps);
 		System.out.println("Done.");
 
 		// set verbosity, defaults to false
@@ -242,6 +254,34 @@ public class PioText {
 
 		// Run PioText
 		piotxt.run();
+	}
+
+	private static Properties promptLogin() {
+		Console console = System.console();
+		Properties secureProps = new Properties();
+		
+		if (console != null) {
+			System.out.println("Please enter your Google Voice credentials");
+			String username = console.readLine("%s", "Username:");
+			char[] passwd = console.readPassword("%s", "Password:");
+			if (username != null && passwd != null) {
+				secureProps.setProperty("gv_user", username);
+				secureProps.setProperty("gv_pass", new String(passwd));
+				
+				// for security, as recommend by Java API
+				java.util.Arrays.fill(passwd, ' ');
+			} else {
+				System.err.println("You must enter a username and password or place your");
+				System.err.println("credentials in resoureces/secure.properties.");
+				return null;
+			}
+		} else {
+			System.err.println("Piotxt needs to be run from a console or you must have your Google Voice");
+			System.err.println("credentials in resoures/secure.properties");
+			return null;
+		}
+		
+		return secureProps;
 	}
 
 }
